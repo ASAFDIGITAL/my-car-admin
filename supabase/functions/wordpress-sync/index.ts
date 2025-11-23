@@ -255,36 +255,56 @@ serve(async (req) => {
             const media = await mediaRes.json();
 
             if (media.source_url) {
-              // Download image
-              const imageRes = await fetch(media.source_url);
-              const imageBlob = await imageRes.blob();
-              const arrayBuffer = await imageBlob.arrayBuffer();
+              // Check if image already exists for this car
+              const { data: existingImage } = await supabaseClient
+                .from('car_images')
+                .select('id, storage_path')
+                .eq('car_id', carData.id)
+                .eq('is_primary', true)
+                .single();
 
-              // Upload to Supabase storage
-              const fileName = `${car.id}_${Date.now()}.jpg`;
-              const filePath = `${carData.id}/${fileName}`;
+              // If image exists and URL hasn't changed, skip download
+              if (existingImage && existingImage.storage_path.includes(`${car.id}_`)) {
+                console.log(`Image already synced for car ${car.id}`);
+              } else {
+                // Download image
+                const imageRes = await fetch(media.source_url);
+                const imageBlob = await imageRes.blob();
+                const arrayBuffer = await imageBlob.arrayBuffer();
 
-              const { error: uploadError } = await supabaseClient.storage
-                .from('car-images')
-                .upload(filePath, arrayBuffer, {
-                  contentType: media.mime_type || 'image/jpeg',
-                  upsert: true,
-                });
+                // Upload to Supabase storage
+                const fileName = `${car.id}_${Date.now()}.jpg`;
+                const filePath = `${carData.id}/${fileName}`;
 
-              if (!uploadError) {
-                // Add to car_images table
-                await supabaseClient
-                  .from('car_images')
-                  .upsert(
-                    {
+                const { error: uploadError } = await supabaseClient.storage
+                  .from('car-images')
+                  .upload(filePath, arrayBuffer, {
+                    contentType: media.mime_type || 'image/jpeg',
+                    upsert: true,
+                  });
+
+                if (!uploadError) {
+                  // Set all existing images as not primary
+                  await supabaseClient
+                    .from('car_images')
+                    .update({ is_primary: false })
+                    .eq('car_id', carData.id);
+
+                  // Add new primary image to car_images table
+                  await supabaseClient
+                    .from('car_images')
+                    .insert({
                       car_id: carData.id,
                       storage_path: filePath,
                       file_name: fileName,
                       file_size: arrayBuffer.byteLength,
                       is_primary: true,
-                    },
-                    { onConflict: 'car_id,storage_path' }
-                  );
+                    });
+
+                  console.log(`Successfully synced image for car ${car.id}`);
+                } else {
+                  console.error(`Upload error for car ${car.id}:`, uploadError);
+                }
               }
             }
           } catch (imgError) {
