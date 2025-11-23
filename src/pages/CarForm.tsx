@@ -251,7 +251,7 @@ const CarForm = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6" dir="rtl">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -261,7 +261,7 @@ const CarForm = () => {
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
-              <div>
+              <div className="text-right">
                 <h1 className="text-3xl font-bold text-foreground">
                   {isEdit ? 'עריכת רכב' : 'הוספת רכב חדש'}
                 </h1>
@@ -282,8 +282,8 @@ const CarForm = () => {
             )}
           </div>
 
-          <Tabs defaultValue="details" className="space-y-6">
-            <TabsList>
+          <Tabs defaultValue="details" className="space-y-6" dir="rtl">
+            <TabsList className="w-full justify-start">
               <TabsTrigger value="details">פרטי הרכב</TabsTrigger>
               {isEdit && (
                 <>
@@ -303,14 +303,14 @@ const CarForm = () => {
               <form onSubmit={handleSubmit}>
                     <Card className="shadow-lg">
                       <CardHeader>
-                        <CardTitle className="text-2xl">פרטי הרכב</CardTitle>
+                        <CardTitle className="text-2xl text-right">פרטי הרכב</CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-8">
+                       <CardContent className="space-y-8" dir="rtl">
                         {/* Basic Details Section */}
                         <div className="space-y-4">
                           <div className="flex items-center gap-2 pb-2 border-b border-border">
                             <div className="w-1 h-6 bg-primary rounded-full" />
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider text-right">
                               פרטים בסיסיים
                             </h3>
                           </div>
@@ -336,10 +336,10 @@ const CarForm = () => {
                                   value={formData.company_id}
                                   onValueChange={(value) => setFormData({ ...formData, company_id: value })}
                                 >
-                                  <SelectTrigger className="text-right">
+                                  <SelectTrigger className="text-right" dir="rtl">
                                     <SelectValue placeholder="בחר יצרן" />
                                   </SelectTrigger>
-                                  <SelectContent>
+                                  <SelectContent dir="rtl" className="text-right">
                                     {companies.map((company) => (
                                       <SelectItem key={company.id} value={company.id}>
                                         {company.name}
@@ -355,10 +355,10 @@ const CarForm = () => {
                                   value={formData.car_type_id}
                                   onValueChange={(value) => setFormData({ ...formData, car_type_id: value })}
                                 >
-                                  <SelectTrigger className="text-right">
+                                  <SelectTrigger className="text-right" dir="rtl">
                                     <SelectValue placeholder="בחר סוג" />
                                   </SelectTrigger>
-                                  <SelectContent>
+                                  <SelectContent dir="rtl" className="text-right">
                                     {carTypes.map((type) => (
                                       <SelectItem key={type.id} value={type.id}>
                                         {type.name}
@@ -374,10 +374,10 @@ const CarForm = () => {
                                   value={formData.car_year_id}
                                   onValueChange={(value) => setFormData({ ...formData, car_year_id: value })}
                                 >
-                                  <SelectTrigger className="text-right">
+                                  <SelectTrigger className="text-right" dir="rtl">
                                     <SelectValue placeholder="בחר שנה" />
                                   </SelectTrigger>
-                                  <SelectContent>
+                                  <SelectContent dir="rtl" className="text-right">
                                     {carYears.map((year) => (
                                       <SelectItem key={year.id} value={year.id}>
                                         {year.year}
@@ -394,10 +394,10 @@ const CarForm = () => {
                                 value={formData.status}
                                 onValueChange={(value: any) => setFormData({ ...formData, status: value })}
                               >
-                                <SelectTrigger className="text-right">
+                                <SelectTrigger className="text-right" dir="rtl">
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent dir="rtl" className="text-right">
                                   <SelectItem value="available">זמין</SelectItem>
                                   <SelectItem value="sold">נמכר</SelectItem>
                                   <SelectItem value="reserved">שמור</SelectItem>
@@ -412,7 +412,7 @@ const CarForm = () => {
                         <div className="space-y-4">
                           <div className="flex items-center gap-2 pb-2 border-b border-border">
                             <div className="w-1 h-6 bg-primary rounded-full" />
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider text-right">
                               פרטים טכניים
                             </h3>
                           </div>
@@ -533,7 +533,7 @@ const CarForm = () => {
                         <div className="space-y-4">
                           <div className="flex items-center gap-2 pb-2 border-b border-border">
                             <div className="w-1 h-6 bg-primary rounded-full" />
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider text-right">
                               פרטים כספיים
                             </h3>
                           </div>
@@ -595,7 +595,7 @@ const CarForm = () => {
                         <div className="space-y-4">
                           <div className="flex items-center gap-2 pb-2 border-b border-border">
                             <div className="w-1 h-6 bg-primary rounded-full" />
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider text-right">
                               הערות והארות
                             </h3>
                           </div>
@@ -637,7 +637,7 @@ const CarForm = () => {
                 <div className="lg:col-span-10">
                   <Card className="shadow-lg">
                     <CardHeader>
-                      <CardTitle className="text-2xl">תמונות הרכב</CardTitle>
+                      <CardTitle className="text-2xl text-right">תמונות הרכב</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ImageUpload carId={id!} />
