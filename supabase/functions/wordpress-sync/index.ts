@@ -49,25 +49,53 @@ serve(async (req) => {
     const authHeader = `Basic ${btoa(`${wpUsername}:${wpPassword}`)}`;
 
     console.log('Starting WordPress sync...');
+    console.log('WordPress URL:', wpUrl);
 
-    // Fetch taxonomies
+    // Fetch taxonomies with error handling
     console.log('Fetching companies...');
     const companiesRes = await fetch(`${wpUrl}/wp-json/wp/v2/company?per_page=100`, {
       headers: { Authorization: authHeader },
     });
-    const companies: WordPressTaxonomy[] = await companiesRes.json();
+    
+    if (!companiesRes.ok) {
+      const errorText = await companiesRes.text();
+      console.error('Failed to fetch companies:', errorText);
+      throw new Error(`Failed to fetch companies: ${companiesRes.status}`);
+    }
+    
+    const companiesData = await companiesRes.json();
+    const companies: WordPressTaxonomy[] = Array.isArray(companiesData) ? companiesData : [];
+    console.log(`Fetched ${companies.length} companies`);
 
     console.log('Fetching car types...');
     const typesRes = await fetch(`${wpUrl}/wp-json/wp/v2/typecar?per_page=100`, {
       headers: { Authorization: authHeader },
     });
-    const types: WordPressTaxonomy[] = await typesRes.json();
+    
+    if (!typesRes.ok) {
+      const errorText = await typesRes.text();
+      console.error('Failed to fetch types:', errorText);
+      throw new Error(`Failed to fetch types: ${typesRes.status}`);
+    }
+    
+    const typesData = await typesRes.json();
+    const types: WordPressTaxonomy[] = Array.isArray(typesData) ? typesData : [];
+    console.log(`Fetched ${types.length} car types`);
 
     console.log('Fetching car years...');
     const yearsRes = await fetch(`${wpUrl}/wp-json/wp/v2/yearcar?per_page=100`, {
       headers: { Authorization: authHeader },
     });
-    const years: WordPressTaxonomy[] = await yearsRes.json();
+    
+    if (!yearsRes.ok) {
+      const errorText = await yearsRes.text();
+      console.error('Failed to fetch years:', errorText);
+      throw new Error(`Failed to fetch years: ${yearsRes.status}`);
+    }
+    
+    const yearsData = await yearsRes.json();
+    const years: WordPressTaxonomy[] = Array.isArray(yearsData) ? yearsData : [];
+    console.log(`Fetched ${years.length} car years`);
 
     // Sync companies
     for (const company of companies) {
@@ -98,7 +126,22 @@ serve(async (req) => {
     const carsRes = await fetch(`${wpUrl}/wp-json/wp/v2/car?per_page=100`, {
       headers: { Authorization: authHeader },
     });
-    const cars: WordPressCar[] = await carsRes.json();
+    
+    if (!carsRes.ok) {
+      const errorText = await carsRes.text();
+      console.error('WordPress API error:', errorText);
+      throw new Error(`WordPress API returned ${carsRes.status}: ${errorText}`);
+    }
+
+    const carsData = await carsRes.json();
+    
+    // Check if response is an array
+    if (!Array.isArray(carsData)) {
+      console.error('WordPress API returned non-array:', carsData);
+      throw new Error(`WordPress API returned invalid data: ${JSON.stringify(carsData)}`);
+    }
+    
+    const cars: WordPressCar[] = carsData;
 
     let syncedCount = 0;
     let errorCount = 0;
