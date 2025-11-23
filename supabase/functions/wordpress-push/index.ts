@@ -119,26 +119,24 @@ serve(async (req) => {
       company: companyTermId ? [companyTermId] : [],
       typecar: typeTermId ? [typeTermId] : [],
       yearcar: yearTermId ? [yearTermId] : [],
-      acf: {
-        purchase_price: car.purchase_price?.toString() || '',
-        internal_notes: car.internal_notes || '',
+      meta: {
         hand: customFields.hand || '',
         km: customFields.km || '',
-        field_56806: customFields.field_56806 || '',
+        _field_56806: customFields.field_56806 || '',
         horsepower: customFields.horsepower || '',
         engine_type: customFields.engine_type || '',
         testcar: customFields.testcar || '',
         price: customFields.price || '',
-        memon: customFields.memon || '',
         seats: customFields.seats || '',
         road_trip_date: customFields.road_trip_date || '',
         number_car: customFields.number_car || '',
       },
     };
     
-    // Add status taxonomy separately to avoid conflicts
+    // Add status taxonomy if available
     if (statusTermId) {
-      wpPostData.status_taxonomy = [statusTermId];
+      // WordPress uses plural form for custom taxonomies
+      wpPostData['status'] = [statusTermId];
     }
 
     let wpPostId = car.wordpress_id;
