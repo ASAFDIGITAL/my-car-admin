@@ -123,7 +123,7 @@ serve(async (req) => {
 
     // Fetch cars
     console.log('Fetching cars...');
-    const carsRes = await fetch(`${wpUrl}/wp-json/wp/v2/car?per_page=100`, {
+    const carsRes = await fetch(`${wpUrl}/wp-json/wp/v2/cars?per_page=100`, {
       headers: { Authorization: authHeader },
     });
     
