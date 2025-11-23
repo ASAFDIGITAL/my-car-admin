@@ -277,10 +277,6 @@ const Cars = () => {
                       <TableHead className="text-right">שם הרכב</TableHead>
                       <TableHead className="text-right">מספר רכב</TableHead>
                       <TableHead className="text-right">יצרן</TableHead>
-                      <TableHead className="text-right">סוג</TableHead>
-                      <TableHead className="text-right">שנה</TableHead>
-                      <TableHead className="text-right">ק"מ</TableHead>
-                      <TableHead className="text-right">מחיר רכישה</TableHead>
                       <TableHead className="text-right">סטטוס</TableHead>
                       <TableHead className="text-right">פעולות</TableHead>
                     </TableRow>
@@ -340,18 +336,6 @@ const Cars = () => {
                             <TableCell className="font-medium">{car.title}</TableCell>
                             <TableCell>{numberCar}</TableCell>
                             <TableCell>{car.companies?.name || '-'}</TableCell>
-                            <TableCell>{car.car_types?.name || '-'}</TableCell>
-                            <TableCell>{car.car_years?.year || '-'}</TableCell>
-                            <TableCell>{km !== '-' ? `${parseInt(km).toLocaleString()} ק"מ` : '-'}</TableCell>
-                            <TableCell>
-                              {car.purchase_price ? (
-                                <span className="flex items-center gap-1 text-sm">
-                                  ₪{Number(car.purchase_price).toLocaleString()}
-                                </span>
-                              ) : (
-                                '-'
-                              )}
-                            </TableCell>
                             <TableCell>
                               <Badge variant="outline" className={statusColors[car.status]}>
                                 {statusLabels[car.status]}
@@ -384,8 +368,26 @@ const Cars = () => {
                           </TableRow>
                           {isExpanded && (
                             <TableRow key={`${car.id}-details`} className="bg-muted/30">
-                              <TableCell colSpan={11}>
+                              <TableCell colSpan={7}>
                                 <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" dir="rtl">
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">סוג:</span>
+                                    <p className="text-sm mt-1">{car.car_types?.name || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">שנה:</span>
+                                    <p className="text-sm mt-1">{car.car_years?.year || '-'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">ק"מ:</span>
+                                    <p className="text-sm mt-1">{km !== '-' ? `${parseInt(km).toLocaleString()} ק"מ` : '-'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">מחיר רכישה:</span>
+                                    <p className="text-sm mt-1">
+                                      {car.purchase_price ? `₪${Number(car.purchase_price).toLocaleString()}` : '-'}
+                                    </p>
+                                  </div>
                                   <div>
                                     <span className="text-sm font-semibold text-muted-foreground">סוג מנוע:</span>
                                     <p className="text-sm mt-1">{engineType}</p>
