@@ -13,9 +13,7 @@ interface WordPressCar {
   company: number[];
   typecar: number[];
   yearcar: number[];
-  acf?: {
-    purchase_price?: string;
-    internal_notes?: string;
+  meta?: {
     [key: string]: any;
   };
   featured_media: number;
@@ -121,10 +119,10 @@ serve(async (req) => {
       }
     }
 
-    // Fetch cars with ACF and featured image
+    // Fetch cars with meta fields (Crocoblock) and featured image
     console.log('Fetching cars...');
     const carsRes = await fetch(
-      `${wpUrl}/wp-json/wp/v2/cars?per_page=100&_fields=id,title,status,company,typecar,yearcar,acf,featured_media&acf_format=standard`,
+      `${wpUrl}/wp-json/wp/v2/cars?per_page=100&_fields=id,title,status,company,typecar,yearcar,meta,featured_media`,
       {
         headers: { Authorization: authHeader },
       }
@@ -201,8 +199,26 @@ serve(async (req) => {
         else if (car.status === 'reserved') status = 'reserved';
         else if (car.status === 'maintenance') status = 'maintenance';
 
-        // Log ACF fields to debug
-        console.log(`Car ${car.id} ACF fields:`, JSON.stringify(car.acf));
+        // Log meta fields to debug Crocoblock data
+        console.log(`Car ${car.id} meta fields:`, JSON.stringify(car.meta));
+        
+        // Extract custom fields from meta (Crocoblock stores them in meta)
+        const metaFields = car.meta || {};
+        const customFields = {
+          hand: metaFields.hand || '',
+          km: metaFields.km || '',
+          field_56806: metaFields.field_56806 || '',
+          horsepower: metaFields.horsepower || '',
+          engine_type: metaFields.engine_type || '',
+          testcar: metaFields.testcar || '',
+          price: metaFields.price || '',
+          memon: metaFields.memon || '',
+          seats: metaFields.seats || '',
+          road_trip_date: metaFields.road_trip_date || '',
+          number_car: metaFields.number_car || '',
+        };
+        
+        console.log(`Car ${car.id} number_car:`, customFields.number_car);
         
         // Upsert car
         const { data: carData, error: carError } = await supabaseClient
@@ -215,9 +231,9 @@ serve(async (req) => {
               company_id: companyId,
               car_type_id: carTypeId,
               car_year_id: carYearId,
-              purchase_price: car.acf?.purchase_price ? parseFloat(car.acf.purchase_price) : null,
-              internal_notes: car.acf?.internal_notes || null,
-              custom_fields: car.acf || {},
+              purchase_price: metaFields.purchase_price ? parseFloat(metaFields.purchase_price) : null,
+              internal_notes: metaFields.internal_notes || null,
+              custom_fields: customFields,
             },
             { onConflict: 'wordpress_id' }
           )
