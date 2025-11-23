@@ -60,7 +60,7 @@ const SaleForm = () => {
     try {
       const { data, error } = await supabase
         .from('cars')
-        .select('id, title, status')
+        .select('id, title, status, custom_fields')
         .in('status', ['available', 'sold'])
         .order('title');
 
@@ -143,15 +143,19 @@ const SaleForm = () => {
                   <SelectTrigger className="text-right">
                     <SelectValue placeholder="בחר רכב" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {cars.map((car) => (
-                      <SelectItem key={car.id} value={car.id}>
-                        {car.title}
-                        {car.status === 'sold' && (
-                          <span className="text-xs text-muted-foreground mr-2">(נמכר)</span>
-                        )}
-                      </SelectItem>
-                    ))}
+                  <SelectContent dir="rtl" className="text-right">
+                    {cars.map((car) => {
+                      const numberCar = (car.custom_fields as any)?.number_car;
+                      return (
+                        <SelectItem key={car.id} value={car.id}>
+                          {car.title}
+                          {numberCar && ` - ${numberCar}`}
+                          {car.status === 'sold' && (
+                            <span className="text-xs text-muted-foreground mr-2"> (נמכר)</span>
+                          )}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

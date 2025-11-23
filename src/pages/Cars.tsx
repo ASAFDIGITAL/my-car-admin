@@ -36,6 +36,7 @@ interface Car {
   car_types: { name: string } | null;
   car_years: { year: number } | null;
   created_at: string;
+  custom_fields: any;
   car_images: Array<{ storage_path: string; is_primary: boolean }>;
 }
 
@@ -107,10 +108,15 @@ const Cars = () => {
     }
   };
 
-  const filteredCars = cars.filter((car) =>
-    car.title.toLowerCase().includes(search.toLowerCase()) ||
-    car.companies?.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCars = cars.filter((car) => {
+    const searchLower = search.toLowerCase();
+    const numberCar = (car.custom_fields as any)?.number_car || '';
+    return (
+      car.title.toLowerCase().includes(searchLower) ||
+      car.companies?.name.toLowerCase().includes(searchLower) ||
+      numberCar.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <Layout>
@@ -139,10 +145,11 @@ const Cars = () => {
           </CardHeader>
           <CardContent>
             <Input
-              placeholder="חפש לפי שם רכב או יצרן..."
+              placeholder="חפש לפי שם רכב, יצרן או מספר רכב..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="max-w-md"
+              className="max-w-md text-right"
+              dir="rtl"
             />
           </CardContent>
         </Card>
@@ -162,6 +169,7 @@ const Cars = () => {
                     <TableRow>
                       <TableHead className="text-right">תמונה</TableHead>
                       <TableHead className="text-right">שם הרכב</TableHead>
+                      <TableHead className="text-right">מספר רכב</TableHead>
                       <TableHead className="text-right">יצרן</TableHead>
                       <TableHead className="text-right">סוג</TableHead>
                       <TableHead className="text-right">שנה</TableHead>
@@ -171,8 +179,9 @@ const Cars = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredCars.map((car) => {
+                  {filteredCars.map((car) => {
                       const primaryImage = car.car_images?.find(img => img.is_primary);
+                      const numberCar = (car.custom_fields as any)?.number_car || '-';
                       return (
                         <TableRow key={car.id}>
                           <TableCell>
@@ -189,6 +198,7 @@ const Cars = () => {
                             )}
                           </TableCell>
                           <TableCell className="font-medium">{car.title}</TableCell>
+                          <TableCell>{numberCar}</TableCell>
                         <TableCell>{car.companies?.name || '-'}</TableCell>
                         <TableCell>{car.car_types?.name || '-'}</TableCell>
                           <TableCell>{car.car_years?.year || '-'}</TableCell>
