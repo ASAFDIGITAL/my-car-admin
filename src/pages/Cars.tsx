@@ -4,7 +4,7 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, Edit, Trash2, DollarSign, Car as CarIcon } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, DollarSign, Car as CarIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,6 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -26,6 +33,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface Car {
   id: string;
@@ -39,6 +51,7 @@ interface Car {
   custom_fields: any;
   car_images: Array<{ storage_path: string; is_primary: boolean }>;
   wordpress_id: number | null;
+  internal_notes: string | null;
 }
 
 
@@ -60,7 +73,11 @@ const Cars = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [engineTypeFilter, setEngineTypeFilter] = useState<string>('all');
+  const [yearFilter, setYearFilter] = useState<string>('all');
+  const [kmFilter, setKmFilter] = useState<string>('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchCars();
@@ -110,15 +127,63 @@ const Cars = () => {
     }
   };
 
+  const toggleRow = (carId: string) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(carId)) {
+        newSet.delete(carId);
+      } else {
+        newSet.add(carId);
+      }
+      return newSet;
+    });
+  };
+
   const filteredCars = cars.filter((car) => {
     const searchLower = search.toLowerCase();
-    const numberCar = (car.custom_fields as any)?.number_car || '';
-    return (
+    const customFields = (car.custom_fields as any) || {};
+    const numberCar = customFields.number_car || '';
+    const engineType = customFields.engine_type || '';
+    const km = customFields.km || '';
+    const year = car.car_years?.year?.toString() || '';
+
+    // Text search
+    const matchesSearch =
       car.title.toLowerCase().includes(searchLower) ||
       car.companies?.name.toLowerCase().includes(searchLower) ||
-      numberCar.toLowerCase().includes(searchLower)
-    );
+      numberCar.toLowerCase().includes(searchLower) ||
+      engineType.toLowerCase().includes(searchLower);
+
+    // Engine type filter
+    const matchesEngineType =
+      engineTypeFilter === 'all' || engineType.toLowerCase().includes(engineTypeFilter.toLowerCase());
+
+    // Year filter
+    const matchesYear = yearFilter === 'all' || year === yearFilter;
+
+    // KM filter
+    let matchesKm = true;
+    if (kmFilter !== 'all' && km) {
+      const kmNum = parseInt(km);
+      if (kmFilter === 'low' && kmNum > 100000) matchesKm = false;
+      if (kmFilter === 'medium' && (kmNum <= 100000 || kmNum > 300000)) matchesKm = false;
+      if (kmFilter === 'high' && kmNum <= 300000) matchesKm = false;
+    }
+
+    return matchesSearch && matchesEngineType && matchesYear && matchesKm;
   });
+
+  // Get unique years and engine types for filters
+  const uniqueYears = Array.from(new Set(cars.map((car) => car.car_years?.year).filter(Boolean))).sort(
+    (a, b) => (b as number) - (a as number)
+  );
+  const uniqueEngineTypes = Array.from(
+    new Set(
+      cars
+        .map((car) => (car.custom_fields as any)?.engine_type)
+        .filter((type) => type && type.trim() !== '')
+    )
+  ).sort();
 
   return (
     <Layout>
@@ -142,17 +207,55 @@ const Cars = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Search className="w-5 h-5" />
-              חיפוש רכבים
+              חיפוש וסינון רכבים
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Input
-              placeholder="חפש לפי שם רכב, יצרן או מספר רכב..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-md text-right"
-              dir="rtl"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" dir="rtl">
+              <Input
+                placeholder="חפש לפי שם רכב, יצרן, מספר רכב..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="text-right"
+              />
+              <Select value={engineTypeFilter} onValueChange={setEngineTypeFilter}>
+                <SelectTrigger className="text-right">
+                  <SelectValue placeholder="סוג מנוע" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל סוגי המנוע</SelectItem>
+                  {uniqueEngineTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={yearFilter} onValueChange={setYearFilter}>
+                <SelectTrigger className="text-right">
+                  <SelectValue placeholder="שנה" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל השנים</SelectItem>
+                  {uniqueYears.map((year) => (
+                    <SelectItem key={year} value={year?.toString() || ''}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={kmFilter} onValueChange={setKmFilter}>
+                <SelectTrigger className="text-right">
+                  <SelectValue placeholder="קילומטראז'" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הקילומטראז'</SelectItem>
+                  <SelectItem value="low">עד 100,000 ק"מ</SelectItem>
+                  <SelectItem value="medium">100,000 - 300,000 ק"מ</SelectItem>
+                  <SelectItem value="high">מעל 300,000 ק"מ</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -169,21 +272,32 @@ const Cars = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="text-right w-12"></TableHead>
                       <TableHead className="text-right">תמונה</TableHead>
                       <TableHead className="text-right">שם הרכב</TableHead>
                       <TableHead className="text-right">מספר רכב</TableHead>
                       <TableHead className="text-right">יצרן</TableHead>
                       <TableHead className="text-right">סוג</TableHead>
                       <TableHead className="text-right">שנה</TableHead>
+                      <TableHead className="text-right">ק"מ</TableHead>
                       <TableHead className="text-right">מחיר רכישה</TableHead>
                       <TableHead className="text-right">סטטוס</TableHead>
                       <TableHead className="text-right">פעולות</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                  {filteredCars.map((car) => {
+                    {filteredCars.map((car) => {
                       const primaryImage = car.car_images?.find((img) => img.is_primary);
-                      const numberCar = (car.custom_fields as any)?.number_car || '-';
+                      const customFields = (car.custom_fields as any) || {};
+                      const numberCar = customFields.number_car || '-';
+                      const km = customFields.km || '-';
+                      const engineType = customFields.engine_type || '-';
+                      const hand = customFields.hand || '-';
+                      const horsepower = customFields.horsepower || '-';
+                      const seats = customFields.seats || '-';
+                      const price = customFields.price || '-';
+                      const roadTripDate = customFields.road_trip_date || '-';
+                      
                       const primaryImageUrl = primaryImage
                         ? supabase.storage.from('car-images').getPublicUrl(primaryImage.storage_path).data
                             .publicUrl
@@ -191,66 +305,122 @@ const Cars = () => {
                       const wordpressUrl = car.wordpress_id
                         ? `https://walid-group.co.il/?p=${car.wordpress_id}`
                         : null;
+                      const isExpanded = expandedRows.has(car.id);
+                      
                       return (
-                        <TableRow key={car.id}>
-                          <TableCell>
-                            {primaryImageUrl ? (
-                              <img
-                                src={primaryImageUrl}
-                                alt={car.title}
-                                className="w-16 h-16 object-cover rounded-lg"
-                              />
-                            ) : (
-                              <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                                <CarIcon className="w-8 h-8 text-muted-foreground" />
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell className="font-medium">{car.title}</TableCell>
-                          <TableCell>{numberCar}</TableCell>
-                          <TableCell>{car.companies?.name || '-'}</TableCell>
-                          <TableCell>{car.car_types?.name || '-'}</TableCell>
-                          <TableCell>{car.car_years?.year || '-'}</TableCell>
-                          <TableCell>
-                            {car.purchase_price ? (
-                              <span className="flex items-center gap-1 text-sm">
-                                <DollarSign className="w-3 h-3" />
-                                {Number(car.purchase_price).toLocaleString()}
-                              </span>
-                            ) : (
-                              '-'
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={statusColors[car.status]}>
-                              {statusLabels[car.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {wordpressUrl && (
-                                <a href={wordpressUrl} target="_blank" rel="noreferrer">
-                                  <Button variant="ghost" size="icon" className="hover:bg-accent/10">
-                                    <CarIcon className="w-4 h-4" />
-                                  </Button>
-                                </a>
-                              )}
-                              <Link to={`/cars/edit/${car.id}`}>
-                                <Button variant="ghost" size="icon" className="hover:bg-primary/10">
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                              </Link>
+                        <>
+                          <TableRow key={car.id} className="group">
+                            <TableCell>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="hover:bg-destructive/10 text-destructive"
-                                onClick={() => setDeleteId(car.id)}
+                                onClick={() => toggleRow(car.id)}
+                                className="hover:bg-accent/10"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                {isExpanded ? (
+                                  <ChevronUp className="w-4 h-4" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4" />
+                                )}
                               </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
+                            </TableCell>
+                            <TableCell>
+                              {primaryImageUrl ? (
+                                <img
+                                  src={primaryImageUrl}
+                                  alt={car.title}
+                                  className="w-16 h-16 object-cover rounded-lg"
+                                />
+                              ) : (
+                                <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                                  <CarIcon className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-medium">{car.title}</TableCell>
+                            <TableCell>{numberCar}</TableCell>
+                            <TableCell>{car.companies?.name || '-'}</TableCell>
+                            <TableCell>{car.car_types?.name || '-'}</TableCell>
+                            <TableCell>{car.car_years?.year || '-'}</TableCell>
+                            <TableCell>{km !== '-' ? `${parseInt(km).toLocaleString()} ק"מ` : '-'}</TableCell>
+                            <TableCell>
+                              {car.purchase_price ? (
+                                <span className="flex items-center gap-1 text-sm">
+                                  ₪{Number(car.purchase_price).toLocaleString()}
+                                </span>
+                              ) : (
+                                '-'
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={statusColors[car.status]}>
+                                {statusLabels[car.status]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {wordpressUrl && (
+                                  <a href={wordpressUrl} target="_blank" rel="noreferrer">
+                                    <Button variant="ghost" size="icon" className="hover:bg-accent/10">
+                                      <CarIcon className="w-4 h-4" />
+                                    </Button>
+                                  </a>
+                                )}
+                                <Link to={`/cars/edit/${car.id}`}>
+                                  <Button variant="ghost" size="icon" className="hover:bg-primary/10">
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                </Link>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="hover:bg-destructive/10 text-destructive"
+                                  onClick={() => setDeleteId(car.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {isExpanded && (
+                            <TableRow key={`${car.id}-details`} className="bg-muted/30">
+                              <TableCell colSpan={11}>
+                                <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" dir="rtl">
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">סוג מנוע:</span>
+                                    <p className="text-sm mt-1">{engineType}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">יד:</span>
+                                    <p className="text-sm mt-1">{hand}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">כוח סוס:</span>
+                                    <p className="text-sm mt-1">{horsepower}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">מספר מושבים:</span>
+                                    <p className="text-sm mt-1">{seats}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">מחיר מבוקש:</span>
+                                    <p className="text-sm mt-1">{price !== '-' ? `₪${parseInt(price).toLocaleString()}` : '-'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-sm font-semibold text-muted-foreground">תאריך טסט:</span>
+                                    <p className="text-sm mt-1">{roadTripDate}</p>
+                                  </div>
+                                  {car.internal_notes && (
+                                    <div className="col-span-2 md:col-span-3 lg:col-span-4">
+                                      <span className="text-sm font-semibold text-muted-foreground">הערות פנימיות:</span>
+                                      <p className="text-sm mt-1 whitespace-pre-wrap">{car.internal_notes}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </>
                       );
                     })}
 
