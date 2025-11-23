@@ -132,6 +132,8 @@ serve(async (req) => {
         number_car: customFields.number_car || '',
       },
     };
+    
+    // Note: Not sending status taxonomy to avoid conflict with post status field
     // Add status taxonomy if available - disabled to avoid conflict with core post status
     // If in the future WordPress expects a dedicated taxonomy field name, it can be added here safely
     // if (statusTermId) {
