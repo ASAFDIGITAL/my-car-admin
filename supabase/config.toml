@@ -15,3 +15,6 @@ verify_jwt = true
 [functions.update-wp-credentials]
 verify_jwt = true
 
+[functions.init-admin-user]
+verify_jwt = false
+
