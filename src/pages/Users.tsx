@@ -4,7 +4,9 @@ import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Shield, ShieldOff, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, Shield, ShieldOff, User, UserPlus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -17,6 +19,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserProfile {
   id: string;
@@ -31,7 +41,11 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ id: string; action: 'add' | 'remove' } | null>(null);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [newUserData, setNewUserData] = useState({ email: '', password: '', fullName: '' });
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -116,6 +130,65 @@ const Users = () => {
     }
   };
 
+  const handleDeleteUser = (userId: string) => {
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+      setActionLoading(userToDelete);
+
+      // Delete from auth.users using admin API
+      const { error: authError } = await supabase.auth.admin.deleteUser(userToDelete);
+      if (authError) throw authError;
+
+      toast.success('המשתמש נמחק בהצלחה');
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error('שגיאה במחיקת המשתמש');
+    } finally {
+      setActionLoading(null);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUserData.email || !newUserData.password || !newUserData.fullName) {
+      toast.error('נא למלא את כל השדות');
+      return;
+    }
+
+    try {
+      setActionLoading('creating');
+
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: newUserData.email,
+        password: newUserData.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: newUserData.fullName,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('המשתמש נוצר בהצלחה');
+      setNewUserData({ email: '', password: '', fullName: '' });
+      setCreateDialogOpen(false);
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      toast.error('שגיאה ביצירת משתמש');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -129,11 +202,17 @@ const Users = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">ניהול משתמשים</h1>
-          <p className="text-muted-foreground mt-2">
-            צפה בכל המשתמשים במערכת והוסף או הסר הרשאות אדמין
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">ניהול משתמשים</h1>
+            <p className="text-muted-foreground mt-2">
+              צפה בכל המשתמשים במערכת, הוסף או הסר הרשאות אדמין
+            </p>
+          </div>
+          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+            <UserPlus className="w-4 h-4" />
+            הוסף משתמש חדש
+          </Button>
         </div>
 
         <div className="grid gap-4">
@@ -171,29 +250,41 @@ const Users = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex gap-2">
                     {user.id !== currentUser?.id && (
-                      <Button
-                        variant={user.isAdmin ? 'destructive' : 'default'}
-                        size="sm"
-                        onClick={() => handleRoleChange(user.id, user.isAdmin ? 'remove' : 'add')}
-                        disabled={actionLoading === user.id}
-                        className="gap-2"
-                      >
-                        {actionLoading === user.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : user.isAdmin ? (
-                          <>
-                            <ShieldOff className="w-4 h-4" />
-                            הסר הרשאות אדמין
-                          </>
-                        ) : (
-                          <>
-                            <Shield className="w-4 h-4" />
-                            הוסף הרשאות אדמין
-                          </>
-                        )}
-                      </Button>
+                      <>
+                        <Button
+                          variant={user.isAdmin ? 'outline' : 'default'}
+                          size="sm"
+                          onClick={() => handleRoleChange(user.id, user.isAdmin ? 'remove' : 'add')}
+                          disabled={actionLoading === user.id}
+                          className="gap-2"
+                        >
+                          {actionLoading === user.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : user.isAdmin ? (
+                            <>
+                              <ShieldOff className="w-4 h-4" />
+                              הסר אדמין
+                            </>
+                          ) : (
+                            <>
+                              <Shield className="w-4 h-4" />
+                              הוסף אדמין
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id)}
+                          disabled={actionLoading === user.id}
+                          className="gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          מחק
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -217,6 +308,7 @@ const Users = () => {
         </div>
       </div>
 
+      {/* Role Change Dialog */}
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -235,6 +327,82 @@ const Users = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete User Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>מחיקת משתמש</AlertDialogTitle>
+            <AlertDialogDescription>
+              האם אתה בטוח שברצונך למחוק משתמש זה? פעולה זו לא ניתנת לביטול והמשתמש יאבד את כל הגישה למערכת.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteUser} className="bg-destructive text-destructive-foreground">
+              מחק משתמש
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>הוסף משתמש חדש</DialogTitle>
+            <DialogDescription>
+              צור חשבון משתמש חדש במערכת. המשתמש יוכל להתחבר באמצעות האימייל והסיסמה שתגדיר.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">שם מלא</Label>
+              <Input
+                id="fullName"
+                value={newUserData.fullName}
+                onChange={(e) => setNewUserData({ ...newUserData, fullName: e.target.value })}
+                placeholder="הזן שם מלא"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">אימייל</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                placeholder="example@email.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">סיסמה</Label>
+              <Input
+                id="password"
+                type="password"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                placeholder="הזן סיסמה"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+              ביטול
+            </Button>
+            <Button onClick={handleCreateUser} disabled={actionLoading === 'creating'}>
+              {actionLoading === 'creating' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                  יוצר...
+                </>
+              ) : (
+                'צור משתמש'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
