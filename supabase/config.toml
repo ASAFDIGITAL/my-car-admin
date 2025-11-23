@@ -6,3 +6,9 @@ verify_jwt = true
 [functions.wordpress-push]
 verify_jwt = true
 
+[functions.wordpress-test-connection]
+verify_jwt = true
+
+[functions.wordpress-taxonomy]
+verify_jwt = true
+

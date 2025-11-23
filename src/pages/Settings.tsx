@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, Settings as SettingsIcon } from 'lucide-react';
+import { Plus, Trash2, Settings as SettingsIcon, Wifi, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -45,6 +45,9 @@ const Settings = () => {
   const [newCarType, setNewCarType] = useState('');
   const [newYear, setNewYear] = useState('');
   const [deleteItem, setDeleteItem] = useState<{ type: string; id: string; name: string } | null>(null);
+
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionResults, setConnectionResults] = useState<any>(null);
 
   useEffect(() => {
     fetchData();
@@ -149,6 +152,37 @@ const Settings = () => {
     }
   };
 
+  const handleTestConnection = async () => {
+    try {
+      setTestingConnection(true);
+      setConnectionResults(null);
+      toast.loading('בודק חיבור ל-WordPress...');
+
+      const { data, error } = await supabase.functions.invoke('wordpress-test-connection');
+
+      if (error) {
+        toast.dismiss();
+        toast.error(`שגיאה בבדיקת החיבור: ${error.message}`);
+        return;
+      }
+
+      toast.dismiss();
+      setConnectionResults(data);
+      
+      if (data.success) {
+        toast.success(data.summary);
+      } else {
+        toast.error(data.summary || 'נמצאו בעיות בחיבור');
+      }
+    } catch (error: any) {
+      toast.dismiss();
+      console.error('Error testing connection:', error);
+      toast.error(`שגיאה בבדיקת החיבור: ${error.message}`);
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -162,12 +196,74 @@ const Settings = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="companies" dir="rtl">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="wordpress" dir="rtl">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="wordpress">חיבור WordPress</TabsTrigger>
             <TabsTrigger value="companies">יצרנים</TabsTrigger>
             <TabsTrigger value="types">סוגי רכב</TabsTrigger>
             <TabsTrigger value="years">שנים</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="wordpress" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wifi className="w-5 h-5" />
+                  בדיקת חיבור ל-WordPress
+                </CardTitle>
+                <CardDescription>
+                  בדוק את החיבור להגדרות וההרשאות ל-WordPress
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button
+                  onClick={handleTestConnection}
+                  disabled={testingConnection}
+                  className="gap-2"
+                  size="lg"
+                >
+                  <Wifi className="w-4 h-4" />
+                  {testingConnection ? 'בודק חיבור...' : 'בדוק חיבור'}
+                </Button>
+
+                {connectionResults && (
+                  <div className="space-y-3 p-4 bg-muted rounded-lg" dir="rtl">
+                    <h3 className="font-semibold text-lg">תוצאות בדיקה:</h3>
+                    
+                    {Object.entries(connectionResults.tests || {}).map(([key, test]: [string, any]) => (
+                      <div key={key} className="flex items-start gap-3 p-3 bg-background rounded-md">
+                        {test.success ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                        )}
+                        <div className="flex-1">
+                          <p className={test.success ? 'text-green-600' : 'text-destructive'}>
+                            {test.message}
+                          </p>
+                          {test.details && (
+                            <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto">
+                              {JSON.stringify(test.details, null, 2)}
+                            </pre>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {connectionResults.summary && (
+                      <div className={`p-4 rounded-md font-medium ${
+                        connectionResults.success 
+                          ? 'bg-green-50 text-green-700 border border-green-200' 
+                          : 'bg-destructive/10 text-destructive border border-destructive/20'
+                      }`}>
+                        {connectionResults.summary}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="companies" className="space-y-4">
             <Card>
