@@ -121,11 +121,14 @@ serve(async (req) => {
       }
     }
 
-    // Fetch cars
+    // Fetch cars with ACF and featured image
     console.log('Fetching cars...');
-    const carsRes = await fetch(`${wpUrl}/wp-json/wp/v2/cars?per_page=100`, {
-      headers: { Authorization: authHeader },
-    });
+    const carsRes = await fetch(
+      `${wpUrl}/wp-json/wp/v2/cars?per_page=100&_fields=id,title,status,company,typecar,yearcar,acf,featured_media&acf_format=standard`,
+      {
+        headers: { Authorization: authHeader },
+      }
+    );
     
     if (!carsRes.ok) {
       const errorText = await carsRes.text();
@@ -192,11 +195,11 @@ serve(async (req) => {
           }
         }
 
-        // Map WordPress status to our enum
-        let status: 'available' | 'pending' | 'sold' | 'reserved' = 'available';
+        // Map WordPress status to our enum (fallback ל-available אם לא קיים)
+        let status: 'available' | 'sold' | 'reserved' | 'maintenance' = 'available';
         if (car.status === 'sold') status = 'sold';
         else if (car.status === 'reserved') status = 'reserved';
-        else if (car.status === 'pending') status = 'pending';
+        else if (car.status === 'maintenance') status = 'maintenance';
 
         // Log ACF fields to debug
         console.log(`Car ${car.id} ACF fields:`, JSON.stringify(car.acf));
