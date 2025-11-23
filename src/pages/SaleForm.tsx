@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ interface FormData {
 
 const SaleForm = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [cars, setCars] = useState<any[]>([]);
 
@@ -47,14 +48,20 @@ const SaleForm = () => {
 
   useEffect(() => {
     fetchAvailableCars();
-  }, []);
+    
+    // Get carId from URL if exists
+    const carIdFromUrl = searchParams.get('carId');
+    if (carIdFromUrl) {
+      setFormData(prev => ({ ...prev, car_id: carIdFromUrl }));
+    }
+  }, [searchParams]);
 
   const fetchAvailableCars = async () => {
     try {
       const { data, error } = await supabase
         .from('cars')
-        .select('id, title')
-        .eq('status', 'available')
+        .select('id, title, status')
+        .in('status', ['available', 'sold'])
         .order('title');
 
       if (error) throw error;
@@ -140,6 +147,9 @@ const SaleForm = () => {
                     {cars.map((car) => (
                       <SelectItem key={car.id} value={car.id}>
                         {car.title}
+                        {car.status === 'sold' && (
+                          <span className="text-xs text-muted-foreground mr-2">(נמכר)</span>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -149,15 +159,21 @@ const SaleForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price">מחיר מכירה *</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={formData.sale_price}
-                    onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
-                    placeholder="0.00"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      value={formData.sale_price}
+                      onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
+                      placeholder="0.00"
+                      required
+                      className="pr-8"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                      ₪
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
