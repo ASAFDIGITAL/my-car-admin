@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Car, DollarSign, ShoppingCart, TrendingUp } from 'lucide-react';
+import { Car, DollarSign, ShoppingCart, TrendingUp, RefreshCw } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface Stats {
   totalCars: number;
@@ -20,6 +22,7 @@ const Dashboard = () => {
     totalSales: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -64,6 +67,23 @@ const Dashboard = () => {
     }
   };
 
+  const handleWordPressSync = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('wordpress-sync');
+
+      if (error) throw error;
+
+      toast.success(data.message || 'סנכרון הושלם בהצלחה');
+      fetchStats(); // Refresh stats after sync
+    } catch (error) {
+      console.error('Error syncing with WordPress:', error);
+      toast.error('שגיאה בסנכרון עם WordPress');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const statCards = [
     {
       title: 'סה"כ רכבים',
@@ -94,11 +114,17 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-2">
-            לוח בקרה
-          </h1>
-          <p className="text-muted-foreground">מבט כולל על מערכת ניהול הרכבים</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-2">
+              לוח בקרה
+            </h1>
+            <p className="text-muted-foreground">מבט כולל על מערכת ניהול הרכבים</p>
+          </div>
+          <Button onClick={handleWordPressSync} disabled={syncing} className="gap-2">
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'מסנכרן...' : 'סנכרון מ-WordPress'}
+          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
