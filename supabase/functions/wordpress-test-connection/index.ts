@@ -119,7 +119,8 @@ serve(async (req) => {
     try {
       const testPostData = {
         title: '[TEST] Connection Test - Delete Me',
-        status: 'draft', // Create as draft to avoid cluttering the site
+        // Don't send 'status' field as it conflicts with the custom taxonomy
+        // WordPress will use default post status
       };
 
       const writeRes = await fetch(`${wpUrl}/wp-json/wp/v2/cars`, {

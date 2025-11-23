@@ -115,14 +115,11 @@ serve(async (req) => {
     
     const wpPostData: any = {
       title: car.title,
-      // Do not send core "status" field as string, WordPress expects this key
-      // to be an array of integer term IDs for the custom "status" taxonomy.
-      // We rely on the default post status (usually "publish") configured in WordPress.
+      // Don't send 'status' field if we don't have a valid term ID
+      // to avoid conflicts with WordPress's core post_status field
       company: companyTermId ? [companyTermId] : [],
       typecar: typeTermId ? [typeTermId] : [],
       yearcar: yearTermId ? [yearTermId] : [],
-      // Map our app status to the WordPress "status" TAXONOMY (array of term IDs)
-      status: statusTermId ? [statusTermId] : [],
       meta: {
         hand: customFields.hand || '',
         km: customFields.km || '',
@@ -137,8 +134,11 @@ serve(async (req) => {
       },
     };
     
-    // Note: We no longer send a separate status taxonomy field name.
-    // The "status" key above is the taxonomy itself as expected by WordPress.
+    // Only add status taxonomy if we have a valid term ID
+    if (statusTermId) {
+      wpPostData.status = [statusTermId];
+    }
+
 
     let wpPostId = car.wordpress_id;
     let wpPost;
