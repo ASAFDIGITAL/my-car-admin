@@ -16,9 +16,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, Save, Image } from 'lucide-react';
+import { ArrowRight, Save, Image, Eye, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ImageUpload } from '@/components/ImageUpload';
+import { WordPressPreview } from '@/components/WordPressPreview';
 
 interface FormData {
   title: string;
@@ -47,6 +48,7 @@ const CarForm = () => {
   const isEdit = !!id;
 
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
   const [carTypes, setCarTypes] = useState<any[]>([]);
   const [carYears, setCarYears] = useState<any[]>([]);
@@ -130,14 +132,17 @@ const CarForm = () => {
       });
 
       // Fetch primary image
-      const { data: imageData } = await supabase.rpc('get_car_primary_image', {
-        car_uuid: id
-      });
+      const { data: images } = await supabase
+        .from('car_images')
+        .select('*')
+        .eq('car_id', id)
+        .eq('is_primary', true)
+        .limit(1);
       
-      if (imageData) {
+      if (images && images.length > 0) {
         const { data: { publicUrl } } = supabase.storage
           .from('car-images')
-          .getPublicUrl(imageData);
+          .getPublicUrl(images[0].storage_path);
         setPrimaryImageUrl(publicUrl);
       }
     } catch (error: any) {
@@ -193,13 +198,24 @@ const CarForm = () => {
         }
         
         toast.success('הרכב עודכן בהצלחה');
+        
+        // Sync to WordPress
+        syncToWordPress(id);
       } else {
-        const { error } = await supabase
+        const { data: newCar, error: insertError } = await supabase
           .from('cars')
-          .insert([dataToSave]);
+          .insert([dataToSave])
+          .select()
+          .single();
 
-        if (error) throw error;
+        if (insertError) throw insertError;
+        
         toast.success('הרכב נוסף בהצלחה');
+        
+        // Sync to WordPress
+        if (newCar) {
+          syncToWordPress(newCar.id);
+        }
       }
 
       navigate('/cars');
@@ -208,6 +224,28 @@ const CarForm = () => {
       console.error('Error saving car:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncToWordPress = async (carId: string) => {
+    try {
+      setSyncing(true);
+      toast.info('מסנכרן לוורדפרס...');
+      
+      const { data, error } = await supabase.functions.invoke('wordpress-push', {
+        body: { carId },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success('סונכרן לוורדפרס בהצלחה!');
+      }
+    } catch (error: any) {
+      console.error('Error syncing to WordPress:', error);
+      toast.error('שגיאה בסנכרון לוורדפרס');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -248,10 +286,16 @@ const CarForm = () => {
             <TabsList>
               <TabsTrigger value="details">פרטי הרכב</TabsTrigger>
               {isEdit && (
-                <TabsTrigger value="images">
-                  <Image className="w-4 h-4 ml-2" />
-                  תמונות
-                </TabsTrigger>
+                <>
+                  <TabsTrigger value="images">
+                    <Image className="w-4 h-4 ml-2" />
+                    תמונות
+                  </TabsTrigger>
+                  <TabsTrigger value="preview">
+                    <Eye className="w-4 h-4 ml-2" />
+                    תצוגה מקדימה
+                  </TabsTrigger>
+                </>
               )}
             </TabsList>
 
@@ -584,6 +628,14 @@ const CarForm = () => {
                       <ImageUpload carId={id!} />
                     </CardContent>
                   </Card>
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="preview">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="hidden lg:block lg:col-span-1" />
+                <div className="lg:col-span-11">
+                  <WordPressPreview carId={id!} />
                 </div>
               </div>
             </TabsContent>
