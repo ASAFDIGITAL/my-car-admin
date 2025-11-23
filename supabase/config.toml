@@ -1,1 +1,4 @@
 project_id = "prqvohcuhvzokfqodmfe"
+
+[functions.wordpress-sync]
+verify_jwt = true
