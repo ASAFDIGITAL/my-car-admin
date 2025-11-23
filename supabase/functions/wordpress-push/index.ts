@@ -109,13 +109,16 @@ serve(async (req) => {
 
     // Prepare WordPress post data
     const customFields = car.custom_fields as any || {};
-    const wpPostData = {
+    
+    console.log('Custom fields:', JSON.stringify(customFields));
+    console.log('Number car value:', customFields.number_car);
+    
+    const wpPostData: any = {
       title: car.title,
       status: 'publish',
       company: companyTermId ? [companyTermId] : [],
       typecar: typeTermId ? [typeTermId] : [],
       yearcar: yearTermId ? [yearTermId] : [],
-      ...(statusTermId ? { status_taxonomy: [statusTermId] } : {}),
       acf: {
         purchase_price: car.purchase_price?.toString() || '',
         internal_notes: car.internal_notes || '',
@@ -132,6 +135,11 @@ serve(async (req) => {
         number_car: customFields.number_car || '',
       },
     };
+    
+    // Add status taxonomy separately to avoid conflicts
+    if (statusTermId) {
+      wpPostData.status_taxonomy = [statusTermId];
+    }
 
     let wpPostId = car.wordpress_id;
     let wpPost;

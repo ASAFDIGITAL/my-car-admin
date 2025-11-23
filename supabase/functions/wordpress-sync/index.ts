@@ -198,6 +198,9 @@ serve(async (req) => {
         else if (car.status === 'reserved') status = 'reserved';
         else if (car.status === 'pending') status = 'pending';
 
+        // Log ACF fields to debug
+        console.log(`Car ${car.id} ACF fields:`, JSON.stringify(car.acf));
+        
         // Upsert car
         const { data: carData, error: carError } = await supabaseClient
           .from('cars')
