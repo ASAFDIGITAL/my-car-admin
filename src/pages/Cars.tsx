@@ -38,7 +38,9 @@ interface Car {
   created_at: string;
   custom_fields: any;
   car_images: Array<{ storage_path: string; is_primary: boolean }>;
+  wordpress_id: number | null;
 }
+
 
 const statusColors = {
   available: 'bg-green-500/10 text-green-700 border-green-500/20',
@@ -180,14 +182,21 @@ const Cars = () => {
                   </TableHeader>
                   <TableBody>
                   {filteredCars.map((car) => {
-                      const primaryImage = car.car_images?.find(img => img.is_primary);
+                      const primaryImage = car.car_images?.find((img) => img.is_primary);
                       const numberCar = (car.custom_fields as any)?.number_car || '-';
+                      const primaryImageUrl = primaryImage
+                        ? supabase.storage.from('car-images').getPublicUrl(primaryImage.storage_path).data
+                            .publicUrl
+                        : null;
+                      const wordpressUrl = car.wordpress_id
+                        ? `https://walid-group.co.il/?p=${car.wordpress_id}`
+                        : null;
                       return (
                         <TableRow key={car.id}>
                           <TableCell>
-                            {primaryImage ? (
-                              <img 
-                                src={primaryImage.storage_path} 
+                            {primaryImageUrl ? (
+                              <img
+                                src={primaryImageUrl}
                                 alt={car.title}
                                 className="w-16 h-16 object-cover rounded-lg"
                               />
@@ -199,8 +208,8 @@ const Cars = () => {
                           </TableCell>
                           <TableCell className="font-medium">{car.title}</TableCell>
                           <TableCell>{numberCar}</TableCell>
-                        <TableCell>{car.companies?.name || '-'}</TableCell>
-                        <TableCell>{car.car_types?.name || '-'}</TableCell>
+                          <TableCell>{car.companies?.name || '-'}</TableCell>
+                          <TableCell>{car.car_types?.name || '-'}</TableCell>
                           <TableCell>{car.car_years?.year || '-'}</TableCell>
                           <TableCell>
                             {car.purchase_price ? (
@@ -219,6 +228,13 @@ const Cars = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
+                              {wordpressUrl && (
+                                <a href={wordpressUrl} target="_blank" rel="noreferrer">
+                                  <Button variant="ghost" size="icon" className="hover:bg-accent/10">
+                                    <CarIcon className="w-4 h-4" />
+                                  </Button>
+                                </a>
+                              )}
                               <Link to={`/cars/edit/${car.id}`}>
                                 <Button variant="ghost" size="icon" className="hover:bg-primary/10">
                                   <Edit className="w-4 h-4" />
@@ -237,6 +253,7 @@ const Cars = () => {
                         </TableRow>
                       );
                     })}
+
                   </TableBody>
                 </Table>
               </div>
