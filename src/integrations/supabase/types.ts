@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      car_images: {
+        Row: {
+          car_id: string
+          created_at: string
+          created_by: string | null
+          file_name: string
+          file_size: number | null
+          id: string
+          is_primary: boolean | null
+          storage_path: string
+        }
+        Insert: {
+          car_id: string
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          file_size?: number | null
+          id?: string
+          is_primary?: boolean | null
+          storage_path: string
+        }
+        Update: {
+          car_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          is_primary?: boolean | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_images_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       car_types: {
         Row: {
           created_at: string
@@ -244,12 +285,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_car_primary_image: { Args: { car_uuid: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      set_primary_car_image: {
+        Args: { image_uuid: string }
+        Returns: undefined
       }
     }
     Enums: {
