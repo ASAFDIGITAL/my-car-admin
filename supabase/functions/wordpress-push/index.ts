@@ -132,12 +132,11 @@ serve(async (req) => {
         number_car: customFields.number_car || '',
       },
     };
-    
-    // Add status taxonomy if available
-    if (statusTermId) {
-      // WordPress uses plural form for custom taxonomies
-      wpPostData['status'] = [statusTermId];
-    }
+    // Add status taxonomy if available - disabled to avoid conflict with core post status
+    // If in the future WordPress expects a dedicated taxonomy field name, it can be added here safely
+    // if (statusTermId) {
+    //   wpPostData.status_terms = [statusTermId];
+    // }
 
     let wpPostId = car.wordpress_id;
     let wpPost;
