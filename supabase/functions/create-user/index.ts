@@ -12,9 +12,20 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Create user function called');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+
+    console.log('Auth header present:', !!authHeader);
+
+    if (!authHeader) {
+      console.error('No authorization header');
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Create client with service role for admin operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
@@ -27,16 +38,29 @@ serve(async (req) => {
     });
 
     // Verify the requesting user is an admin
+    console.log('Getting user from token...');
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     
-    if (userError || !user) {
+    if (userError) {
+      console.error('Error getting user:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', details: userError.message }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!user) {
+      console.error('No user found');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('User found:', user.id);
+
     // Check if user is admin
+    console.log('Checking admin status...');
     const { data: roleData, error: roleError } = await supabaseClient
       .from('user_roles')
       .select('role')
@@ -44,17 +68,32 @@ serve(async (req) => {
       .eq('role', 'admin')
       .maybeSingle();
 
-    if (roleError || !roleData) {
+    if (roleError) {
+      console.error('Error checking role:', roleError);
+      return new Response(
+        JSON.stringify({ error: 'Error checking permissions', details: roleError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!roleData) {
+      console.error('User is not admin');
       return new Response(
         JSON.stringify({ error: 'Forbidden: Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('User is admin, proceeding...');
+
     // Get new user details from request body
+    console.log('Parsing request body...');
     const { email, password, fullName } = await req.json();
 
+    console.log('Request data:', { email, fullName });
+
     if (!email || !password || !fullName) {
+      console.error('Missing required fields');
       return new Response(
         JSON.stringify({ error: 'Email, password, and full name are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -62,6 +101,7 @@ serve(async (req) => {
     }
 
     // Create the user using admin client
+    console.log('Creating user with admin client...');
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -78,6 +118,8 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('User created successfully:', newUser.user?.id);
 
     return new Response(
       JSON.stringify({ success: true, user: newUser }),
