@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -15,8 +16,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowRight, Save } from 'lucide-react';
+import { ArrowRight, Save, Image } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ImageUpload } from '@/components/ImageUpload';
 
 interface FormData {
   title: string;
@@ -156,12 +158,22 @@ const CarForm = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>פרטי הרכב</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <Tabs defaultValue="details" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">פרטי הרכב</TabsTrigger>
+            <TabsTrigger value="images" disabled={!isEdit}>
+              <Image className="w-4 h-4 ml-2" />
+              תמונות
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details">
+            <form onSubmit={handleSubmit}>
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle>פרטי הרכב</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">שם הרכב *</Label>
                 <Input
@@ -274,20 +286,35 @@ const CarForm = () => {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button type="submit" disabled={loading} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  {loading ? 'שומר...' : isEdit ? 'עדכן' : 'הוסף'}
-                </Button>
-                <Link to="/cars">
-                  <Button type="button" variant="outline">
-                    ביטול
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </form>
+                  <div className="flex gap-3 pt-4">
+                    <Button type="submit" disabled={loading} className="gap-2">
+                      <Save className="w-4 h-4" />
+                      {loading ? 'שומר...' : isEdit ? 'עדכן' : 'הוסף'}
+                    </Button>
+                    <Link to="/cars">
+                      <Button type="button" variant="outline">
+                        ביטול
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="images">
+            {isEdit && (
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle>תמונות הרכב</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ImageUpload carId={id!} />
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

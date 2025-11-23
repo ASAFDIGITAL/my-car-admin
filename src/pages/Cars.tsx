@@ -4,7 +4,7 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, Edit, Trash2, DollarSign } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, DollarSign, Car as CarIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -36,6 +36,7 @@ interface Car {
   car_types: { name: string } | null;
   car_years: { year: number } | null;
   created_at: string;
+  car_images: Array<{ storage_path: string; is_primary: boolean }>;
 }
 
 const statusColors = {
@@ -70,7 +71,8 @@ const Cars = () => {
           *,
           companies (name),
           car_types (name),
-          car_years (year)
+          car_years (year),
+          car_images (storage_path, is_primary)
         `)
         .order('created_at', { ascending: false });
 
@@ -158,6 +160,7 @@ const Cars = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>תמונה</TableHead>
                       <TableHead>שם הרכב</TableHead>
                       <TableHead>יצרן</TableHead>
                       <TableHead>סוג</TableHead>
@@ -168,46 +171,62 @@ const Cars = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredCars.map((car) => (
-                      <TableRow key={car.id}>
-                        <TableCell className="font-medium">{car.title}</TableCell>
+                    {filteredCars.map((car) => {
+                      const primaryImage = car.car_images?.find(img => img.is_primary);
+                      return (
+                        <TableRow key={car.id}>
+                          <TableCell>
+                            {primaryImage ? (
+                              <img 
+                                src={primaryImage.storage_path} 
+                                alt={car.title}
+                                className="w-16 h-16 object-cover rounded-lg"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                                <CarIcon className="w-8 h-8 text-muted-foreground" />
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">{car.title}</TableCell>
                         <TableCell>{car.companies?.name || '-'}</TableCell>
                         <TableCell>{car.car_types?.name || '-'}</TableCell>
-                        <TableCell>{car.car_years?.year || '-'}</TableCell>
-                        <TableCell>
-                          {car.purchase_price ? (
-                            <span className="flex items-center gap-1 text-sm">
-                              <DollarSign className="w-3 h-3" />
-                              {Number(car.purchase_price).toLocaleString()}
-                            </span>
-                          ) : (
-                            '-'
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={statusColors[car.status]}>
-                            {statusLabels[car.status]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 justify-end">
-                            <Link to={`/cars/edit/${car.id}`}>
-                              <Button variant="ghost" size="icon" className="hover:bg-primary/10">
-                                <Edit className="w-4 h-4" />
+                          <TableCell>{car.car_years?.year || '-'}</TableCell>
+                          <TableCell>
+                            {car.purchase_price ? (
+                              <span className="flex items-center gap-1 text-sm">
+                                <DollarSign className="w-3 h-3" />
+                                {Number(car.purchase_price).toLocaleString()}
+                              </span>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusColors[car.status]}>
+                              {statusLabels[car.status]}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Link to={`/cars/edit/${car.id}`}>
+                                <Button variant="ghost" size="icon" className="hover:bg-primary/10">
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="hover:bg-destructive/10 text-destructive"
+                                onClick={() => setDeleteId(car.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="hover:bg-destructive/10 text-destructive"
-                              onClick={() => setDeleteId(car.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
