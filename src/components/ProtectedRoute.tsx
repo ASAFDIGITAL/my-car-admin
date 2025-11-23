@@ -9,18 +9,14 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate('/auth');
-      } else if (requireAdmin && !isAdmin) {
-        navigate('/dashboard');
-      }
+    if (!loading && !user) {
+      navigate('/auth');
     }
-  }, [user, loading, isAdmin, requireAdmin, navigate]);
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -33,8 +29,27 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     );
   }
 
-  if (!user || (requireAdmin && !isAdmin)) {
+  if (!user) {
     return null;
+  }
+
+  if (requireAdmin && !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <p className="text-lg font-medium text-destructive">אין לך הרשאה לצפות בעמוד זה</p>
+          <button
+            onClick={async () => {
+              await signOut();
+              navigate('/auth');
+            }}
+            className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            התנתק והתחבר מחדש
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
