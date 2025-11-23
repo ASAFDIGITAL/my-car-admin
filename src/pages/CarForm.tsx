@@ -28,6 +28,17 @@ interface FormData {
   car_year_id: string;
   purchase_price: string;
   internal_notes: string;
+  hand: string;
+  km: string;
+  field_56806: string;
+  horsepower: string;
+  engine_type: string;
+  testcar: string;
+  price: string;
+  memon: string;
+  seats: string;
+  road_trip_date: string;
+  number_car: string;
 }
 
 const CarForm = () => {
@@ -39,6 +50,7 @@ const CarForm = () => {
   const [companies, setCompanies] = useState<any[]>([]);
   const [carTypes, setCarTypes] = useState<any[]>([]);
   const [carYears, setCarYears] = useState<any[]>([]);
+  const [primaryImageUrl, setPrimaryImageUrl] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -48,6 +60,17 @@ const CarForm = () => {
     car_year_id: '',
     purchase_price: '',
     internal_notes: '',
+    hand: '',
+    km: '',
+    field_56806: '',
+    horsepower: '',
+    engine_type: '',
+    testcar: '',
+    price: '',
+    memon: '',
+    seats: '',
+    road_trip_date: '',
+    number_car: '',
   });
 
   useEffect(() => {
@@ -83,6 +106,8 @@ const CarForm = () => {
 
       if (error) throw error;
 
+      const customFields = data.custom_fields as any || {};
+      
       setFormData({
         title: data.title,
         status: data.status,
@@ -91,7 +116,30 @@ const CarForm = () => {
         car_year_id: data.car_year_id || '',
         purchase_price: data.purchase_price?.toString() || '',
         internal_notes: data.internal_notes || '',
+        hand: customFields.hand || '',
+        km: customFields.km || '',
+        field_56806: customFields.field_56806 || '',
+        horsepower: customFields.horsepower || '',
+        engine_type: customFields.engine_type || '',
+        testcar: customFields.testcar || '',
+        price: customFields.price || '',
+        memon: customFields.memon || '',
+        seats: customFields.seats || '',
+        road_trip_date: customFields.road_trip_date || '',
+        number_car: customFields.number_car || '',
       });
+
+      // Fetch primary image
+      const { data: imageData } = await supabase.rpc('get_car_primary_image', {
+        car_uuid: id
+      });
+      
+      if (imageData) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('car-images')
+          .getPublicUrl(imageData);
+        setPrimaryImageUrl(publicUrl);
+      }
     } catch (error: any) {
       toast.error('שגיאה בטעינת הרכב');
       console.error('Error fetching car:', error);
@@ -103,6 +151,20 @@ const CarForm = () => {
     setLoading(true);
 
     try {
+      const customFields = {
+        hand: formData.hand,
+        km: formData.km,
+        field_56806: formData.field_56806,
+        horsepower: formData.horsepower,
+        engine_type: formData.engine_type,
+        testcar: formData.testcar,
+        price: formData.price,
+        memon: formData.memon,
+        seats: formData.seats,
+        road_trip_date: formData.road_trip_date,
+        number_car: formData.number_car,
+      };
+
       const dataToSave = {
         title: formData.title,
         status: formData.status,
@@ -111,6 +173,7 @@ const CarForm = () => {
         car_year_id: formData.car_year_id || null,
         purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
         internal_notes: formData.internal_notes || null,
+        custom_fields: customFields,
       };
 
       if (isEdit) {
@@ -153,20 +216,32 @@ const CarForm = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <Link to="/cars">
-              <Button variant="ghost" size="icon">
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {isEdit ? 'עריכת רכב' : 'הוספת רכב חדש'}
-              </h1>
-              <p className="text-muted-foreground">
-                {isEdit ? 'ערוך את פרטי הרכב' : 'הוסף רכב חדש למערכת'}
-              </p>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Link to="/cars">
+                <Button variant="ghost" size="icon">
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">
+                  {isEdit ? 'עריכת רכב' : 'הוספת רכב חדש'}
+                </h1>
+                <p className="text-muted-foreground">
+                  {isEdit ? 'ערוך את פרטי הרכב' : 'הוסף רכב חדש למערכת'}
+                </p>
+              </div>
             </div>
+            
+            {isEdit && primaryImageUrl && (
+              <div className="w-40 h-40 rounded-lg overflow-hidden border-2 border-border shadow-lg">
+                <img 
+                  src={primaryImageUrl} 
+                  alt="תמונה ראשית" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
           </div>
 
           <Tabs defaultValue="details" className="space-y-6">
@@ -294,6 +369,109 @@ const CarForm = () => {
                           </div>
                         </div>
 
+                        {/* Technical Details Section */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 pb-2 border-b border-border">
+                            <div className="w-1 h-6 bg-primary rounded-full" />
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                              פרטים טכניים
+                            </h3>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="hand">יד</Label>
+                              <Input
+                                id="hand"
+                                type="number"
+                                value={formData.hand}
+                                onChange={(e) => setFormData({ ...formData, hand: e.target.value })}
+                                placeholder="1"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="km">ק״מ</Label>
+                              <Input
+                                id="km"
+                                value={formData.km}
+                                onChange={(e) => setFormData({ ...formData, km: e.target.value })}
+                                placeholder="0"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="number_car">מספר רכב</Label>
+                              <Input
+                                id="number_car"
+                                value={formData.number_car}
+                                onChange={(e) => setFormData({ ...formData, number_car: e.target.value })}
+                                placeholder="מספר רכב"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="horsepower">כוח סוס</Label>
+                              <Input
+                                id="horsepower"
+                                value={formData.horsepower}
+                                onChange={(e) => setFormData({ ...formData, horsepower: e.target.value })}
+                                placeholder="כוח סוס"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="engine_type">סוג מנוע</Label>
+                              <Input
+                                id="engine_type"
+                                value={formData.engine_type}
+                                onChange={(e) => setFormData({ ...formData, engine_type: e.target.value })}
+                                placeholder="סוג מנוע"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="seats">מושבים</Label>
+                              <Input
+                                id="seats"
+                                value={formData.seats}
+                                onChange={(e) => setFormData({ ...formData, seats: e.target.value })}
+                                placeholder="מספר מושבים"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="field_56806">מסיק״ק</Label>
+                              <Input
+                                id="field_56806"
+                                value={formData.field_56806}
+                                onChange={(e) => setFormData({ ...formData, field_56806: e.target.value })}
+                                placeholder="מסיק״ק"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="testcar">טסט עד</Label>
+                              <Input
+                                id="testcar"
+                                type="date"
+                                value={formData.testcar}
+                                onChange={(e) => setFormData({ ...formData, testcar: e.target.value })}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="road_trip_date">תאריך עליה לכביש</Label>
+                              <Input
+                                id="road_trip_date"
+                                value={formData.road_trip_date}
+                                onChange={(e) => setFormData({ ...formData, road_trip_date: e.target.value })}
+                                placeholder="תאריך עליה לכביש"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Financial Section */}
                         <div className="space-y-4">
                           <div className="flex items-center gap-2 pb-2 border-b border-border">
@@ -303,23 +481,53 @@ const CarForm = () => {
                             </h3>
                           </div>
                           
-                          <div className="space-y-2">
-                            <Label htmlFor="price">מחיר רכישה (פנימי)</Label>
-                            <div className="relative">
-                              <Input
-                                id="price"
-                                type="number"
-                                step="0.01"
-                                value={formData.purchase_price}
-                                onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
-                                placeholder="0.00"
-                                className="text-lg pr-8"
-                              />
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-                                ₪
-                              </span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="purchase_price">מחיר רכישה (פנימי)</Label>
+                              <div className="relative">
+                                <Input
+                                  id="purchase_price"
+                                  type="number"
+                                  step="0.01"
+                                  value={formData.purchase_price}
+                                  onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
+                                  placeholder="0.00"
+                                  className="text-lg pr-8"
+                                />
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                                  ₪
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">מחיר זה לא יופיע באתר הציבורי</p>
                             </div>
-                            <p className="text-xs text-muted-foreground">מחיר זה לא יופיע באתר הציבורי</p>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="price">מחיר</Label>
+                              <div className="relative">
+                                <Input
+                                  id="price"
+                                  value={formData.price}
+                                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                  placeholder="מחיר"
+                                  className="text-lg pr-8"
+                                />
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                                  ₪
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                              <Label htmlFor="memon">הצעת מימון (מחיר)</Label>
+                              <Textarea
+                                id="memon"
+                                value={formData.memon}
+                                onChange={(e) => setFormData({ ...formData, memon: e.target.value })}
+                                placeholder="הצעת מימון"
+                                rows={2}
+                                className="resize-none"
+                              />
+                            </div>
                           </div>
                         </div>
 
