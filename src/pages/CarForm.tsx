@@ -317,25 +317,26 @@ const CarForm = () => {
                           
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label htmlFor="title">שם הרכב *</Label>
+                              <Label htmlFor="title" className="text-right block">שם הרכב *</Label>
                               <Input
                                 id="title"
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 placeholder="לדוגמה: מרצדס בנץ ספרינטר 519 2019"
                                 required
-                                className="text-lg"
+                                className="text-lg text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <div className="space-y-2">
-                                <Label htmlFor="company">יצרן</Label>
+                                <Label htmlFor="company" className="text-right block">יצרן</Label>
                                 <Select
                                   value={formData.company_id}
                                   onValueChange={(value) => setFormData({ ...formData, company_id: value })}
                                 >
-                                  <SelectTrigger>
+                                  <SelectTrigger className="text-right">
                                     <SelectValue placeholder="בחר יצרן" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -349,12 +350,12 @@ const CarForm = () => {
                               </div>
 
                               <div className="space-y-2">
-                                <Label htmlFor="type">סוג רכב</Label>
+                                <Label htmlFor="type" className="text-right block">סוג רכב</Label>
                                 <Select
                                   value={formData.car_type_id}
                                   onValueChange={(value) => setFormData({ ...formData, car_type_id: value })}
                                 >
-                                  <SelectTrigger>
+                                  <SelectTrigger className="text-right">
                                     <SelectValue placeholder="בחר סוג" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -368,12 +369,12 @@ const CarForm = () => {
                               </div>
 
                               <div className="space-y-2">
-                                <Label htmlFor="year">שנה</Label>
+                                <Label htmlFor="year" className="text-right block">שנה</Label>
                                 <Select
                                   value={formData.car_year_id}
                                   onValueChange={(value) => setFormData({ ...formData, car_year_id: value })}
                                 >
-                                  <SelectTrigger>
+                                  <SelectTrigger className="text-right">
                                     <SelectValue placeholder="בחר שנה" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -388,12 +389,12 @@ const CarForm = () => {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="status">סטטוס</Label>
+                              <Label htmlFor="status" className="text-right block">סטטוס</Label>
                               <Select
                                 value={formData.status}
                                 onValueChange={(value: any) => setFormData({ ...formData, status: value })}
                               >
-                                <SelectTrigger>
+                                <SelectTrigger className="text-right">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -418,93 +419,111 @@ const CarForm = () => {
                           
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="hand">יד</Label>
+                              <Label htmlFor="hand" className="text-right block">יד</Label>
                               <Input
                                 id="hand"
                                 type="number"
                                 value={formData.hand}
                                 onChange={(e) => setFormData({ ...formData, hand: e.target.value })}
                                 placeholder="1"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="km">ק״מ</Label>
+                              <Label htmlFor="km" className="text-right block">ק״מ</Label>
                               <Input
                                 id="km"
                                 value={formData.km}
                                 onChange={(e) => setFormData({ ...formData, km: e.target.value })}
                                 placeholder="0"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="number_car">מספר רכב</Label>
+                              <Label htmlFor="number_car" className="text-right block">מספר רכב</Label>
                               <Input
                                 id="number_car"
                                 value={formData.number_car}
                                 onChange={(e) => setFormData({ ...formData, number_car: e.target.value })}
                                 placeholder="מספר רכב"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="horsepower">כוח סוס</Label>
+                              <Label htmlFor="horsepower" className="text-right block">כוח סוס</Label>
                               <Input
                                 id="horsepower"
                                 value={formData.horsepower}
                                 onChange={(e) => setFormData({ ...formData, horsepower: e.target.value })}
                                 placeholder="כוח סוס"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="engine_type">סוג מנוע</Label>
+                              <Label htmlFor="engine_type" className="text-right block">סוג מנוע</Label>
                               <Input
                                 id="engine_type"
                                 value={formData.engine_type}
                                 onChange={(e) => setFormData({ ...formData, engine_type: e.target.value })}
                                 placeholder="סוג מנוע"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="seats">מושבים</Label>
+                              <Label htmlFor="seats" className="text-right block">מושבים</Label>
                               <Input
                                 id="seats"
                                 value={formData.seats}
                                 onChange={(e) => setFormData({ ...formData, seats: e.target.value })}
                                 placeholder="מספר מושבים"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="field_56806">מסיק״ק</Label>
+                              <Label htmlFor="field_56806" className="text-right block">מסיק״ק</Label>
                               <Input
                                 id="field_56806"
                                 value={formData.field_56806}
                                 onChange={(e) => setFormData({ ...formData, field_56806: e.target.value })}
                                 placeholder="מסיק״ק"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="testcar">טסט עד</Label>
+                              <Label htmlFor="testcar" className="text-right block">טסט עד</Label>
                               <Input
                                 id="testcar"
                                 type="date"
                                 value={formData.testcar}
                                 onChange={(e) => setFormData({ ...formData, testcar: e.target.value })}
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="road_trip_date">תאריך עליה לכביש</Label>
+                              <Label htmlFor="road_trip_date" className="text-right block">תאריך עליה לכביש</Label>
                               <Input
                                 id="road_trip_date"
                                 value={formData.road_trip_date}
                                 onChange={(e) => setFormData({ ...formData, road_trip_date: e.target.value })}
                                 placeholder="תאריך עליה לכביש"
+                                className="text-right"
+                                dir="rtl"
                               />
                             </div>
                           </div>
@@ -521,7 +540,7 @@ const CarForm = () => {
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="purchase_price">מחיר רכישה (פנימי)</Label>
+                              <Label htmlFor="purchase_price" className="text-right block">מחיר רכישה (פנימי)</Label>
                               <div className="relative">
                                 <Input
                                   id="purchase_price"
@@ -530,40 +549,43 @@ const CarForm = () => {
                                   value={formData.purchase_price}
                                   onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
                                   placeholder="0.00"
-                                  className="text-lg pr-8"
+                                  className="text-lg text-right pl-8"
+                                  dir="rtl"
                                 />
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                                   ₪
                                 </span>
                               </div>
-                              <p className="text-xs text-muted-foreground">מחיר זה לא יופיע באתר הציבורי</p>
+                              <p className="text-xs text-muted-foreground text-right">מחיר זה לא יופיע באתר הציבורי</p>
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="price">מחיר</Label>
+                              <Label htmlFor="price" className="text-right block">מחיר</Label>
                               <div className="relative">
                                 <Input
                                   id="price"
                                   value={formData.price}
                                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                   placeholder="מחיר"
-                                  className="text-lg pr-8"
+                                  className="text-lg text-right pl-8"
+                                  dir="rtl"
                                 />
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                                   ₪
                                 </span>
                               </div>
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                              <Label htmlFor="memon">הצעת מימון (מחיר)</Label>
+                              <Label htmlFor="memon" className="text-right block">הצעת מימון (מחיר)</Label>
                               <Textarea
                                 id="memon"
                                 value={formData.memon}
                                 onChange={(e) => setFormData({ ...formData, memon: e.target.value })}
                                 placeholder="הצעת מימון"
                                 rows={2}
-                                className="resize-none"
+                                className="resize-none text-right"
+                                dir="rtl"
                               />
                             </div>
                           </div>
@@ -579,14 +601,15 @@ const CarForm = () => {
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="notes">הערות פנימיות</Label>
+                            <Label htmlFor="notes" className="text-right block">הערות פנימיות</Label>
                             <Textarea
                               id="notes"
                               value={formData.internal_notes}
                               onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
                               placeholder="הערות, פרטים נוספים..."
                               rows={4}
-                              className="resize-none"
+                              className="resize-none text-right"
+                              dir="rtl"
                             />
                           </div>
                         </div>
