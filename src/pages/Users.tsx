@@ -141,15 +141,18 @@ const Users = () => {
     try {
       setActionLoading(userToDelete);
 
-      // Delete from auth.users using admin API
-      const { error: authError } = await supabase.auth.admin.deleteUser(userToDelete);
-      if (authError) throw authError;
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: userToDelete },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast.success('המשתמש נמחק בהצלחה');
       await fetchUsers();
     } catch (error: any) {
       console.error('Error deleting user:', error);
-      toast.error('שגיאה במחיקת המשתמש');
+      toast.error(error.message || 'שגיאה במחיקת המשתמש');
     } finally {
       setActionLoading(null);
       setDeleteDialogOpen(false);
@@ -166,16 +169,16 @@ const Users = () => {
     try {
       setActionLoading('creating');
 
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: newUserData.email,
-        password: newUserData.password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: newUserData.fullName,
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: newUserData.email,
+          password: newUserData.password,
+          fullName: newUserData.fullName,
         },
       });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast.success('המשתמש נוצר בהצלחה');
       setNewUserData({ email: '', password: '', fullName: '' });
@@ -183,7 +186,7 @@ const Users = () => {
       await fetchUsers();
     } catch (error: any) {
       console.error('Error creating user:', error);
-      toast.error('שגיאה ביצירת משתמש');
+      toast.error(error.message || 'שגיאה ביצירת משתמש');
     } finally {
       setActionLoading(null);
     }
