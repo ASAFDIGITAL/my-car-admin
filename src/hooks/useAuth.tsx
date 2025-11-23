@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface AuthContextType {
@@ -21,7 +20,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener
@@ -88,7 +86,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
 
       toast.success('התחברת בהצלחה!');
-      navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'שגיאה בהתחברות');
       throw error;
@@ -125,7 +122,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
 
       toast.success('התנתקת בהצלחה');
-      navigate('/auth');
     } catch (error: any) {
       toast.error(error.message || 'שגיאה בהתנתקות');
       throw error;

@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
-import { Car, LayoutDashboard, LogOut, ShoppingCart, FileText } from 'lucide-react';
+import { Car, LayoutDashboard, LogOut, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -12,6 +13,12 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const { signOut, user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   const navItems = [
     { to: '/dashboard', label: 'לוח בקרה', icon: LayoutDashboard },
@@ -58,7 +65,7 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="text-sm text-muted-foreground hidden sm:block">
               {user?.email}
             </div>
-            <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">התנתק</span>
             </Button>
