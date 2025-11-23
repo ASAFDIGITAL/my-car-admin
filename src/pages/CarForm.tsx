@@ -300,13 +300,7 @@ const CarForm = () => {
             </TabsList>
 
             <TabsContent value="details">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Empty space on left */}
-                <div className="hidden lg:block lg:col-span-2" />
-
-                {/* Main form on the right */}
-                <div className="lg:col-span-10">
-                  <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit}>
                     <Card className="shadow-lg">
                       <CardHeader>
                         <CardTitle className="text-2xl">פרטי הרכב</CardTitle>
@@ -612,8 +606,6 @@ const CarForm = () => {
                       </CardContent>
                     </Card>
                   </form>
-                </div>
-              </div>
             </TabsContent>
 
             <TabsContent value="images">
