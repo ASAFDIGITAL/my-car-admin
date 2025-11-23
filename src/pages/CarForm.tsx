@@ -120,6 +120,15 @@ const CarForm = () => {
           .eq('id', id);
 
         if (error) throw error;
+        
+        // Check if status changed to sold
+        if (formData.status === 'sold') {
+          toast.success('הרכב עודכן בהצלחה');
+          // Navigate to create sale for this car
+          navigate(`/sales/new?carId=${id}`);
+          return;
+        }
+        
         toast.success('הרכב עודכן בהצלחה');
       } else {
         const { error } = await supabase
@@ -296,15 +305,20 @@ const CarForm = () => {
                           
                           <div className="space-y-2">
                             <Label htmlFor="price">מחיר רכישה (פנימי)</Label>
-                            <Input
-                              id="price"
-                              type="number"
-                              step="0.01"
-                              value={formData.purchase_price}
-                              onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
-                              placeholder="0.00"
-                              className="text-lg"
-                            />
+                            <div className="relative">
+                              <Input
+                                id="price"
+                                type="number"
+                                step="0.01"
+                                value={formData.purchase_price}
+                                onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
+                                placeholder="0.00"
+                                className="text-lg pr-8"
+                              />
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                                ₪
+                              </span>
+                            </div>
                             <p className="text-xs text-muted-foreground">מחיר זה לא יופיע באתר הציבורי</p>
                           </div>
                         </div>
