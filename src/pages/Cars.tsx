@@ -156,18 +156,18 @@ const Cars = () => {
                 {search ? 'לא נמצאו רכבים מתאימים' : 'אין רכבים במערכת'}
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto" dir="rtl">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>תמונה</TableHead>
-                      <TableHead>שם הרכב</TableHead>
-                      <TableHead>יצרן</TableHead>
-                      <TableHead>סוג</TableHead>
-                      <TableHead>שנה</TableHead>
-                      <TableHead>מחיר רכישה</TableHead>
-                      <TableHead>סטטוס</TableHead>
-                      <TableHead className="text-left">פעולות</TableHead>
+                      <TableHead className="text-right">תמונה</TableHead>
+                      <TableHead className="text-right">שם הרכב</TableHead>
+                      <TableHead className="text-right">יצרן</TableHead>
+                      <TableHead className="text-right">סוג</TableHead>
+                      <TableHead className="text-right">שנה</TableHead>
+                      <TableHead className="text-right">מחיר רכישה</TableHead>
+                      <TableHead className="text-right">סטטוס</TableHead>
+                      <TableHead className="text-right">פעולות</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -208,7 +208,7 @@ const Cars = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2 justify-end">
+                            <div className="flex items-center gap-2">
                               <Link to={`/cars/edit/${car.id}`}>
                                 <Button variant="ghost" size="icon" className="hover:bg-primary/10">
                                   <Edit className="w-4 h-4" />

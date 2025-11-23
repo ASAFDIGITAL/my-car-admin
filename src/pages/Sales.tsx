@@ -107,17 +107,17 @@ const Sales = () => {
                 אין מכירות רשומות
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto" dir="rtl">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>תאריך</TableHead>
-                      <TableHead>רכב</TableHead>
-                      <TableHead>קונה</TableHead>
-                      <TableHead>טלפון</TableHead>
-                      <TableHead>אימייל</TableHead>
-                      <TableHead>מחיר</TableHead>
-                      <TableHead>הערות</TableHead>
+                      <TableHead className="text-right">תאריך</TableHead>
+                      <TableHead className="text-right">רכב</TableHead>
+                      <TableHead className="text-right">קונה</TableHead>
+                      <TableHead className="text-right">טלפון</TableHead>
+                      <TableHead className="text-right">אימייל</TableHead>
+                      <TableHead className="text-right">מחיר</TableHead>
+                      <TableHead className="text-right">הערות</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

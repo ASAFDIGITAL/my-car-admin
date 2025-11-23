@@ -132,15 +132,15 @@ const SaleForm = () => {
             <CardHeader>
               <CardTitle>פרטי המכירה</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6" dir="rtl">
               <div className="space-y-2">
-                <Label htmlFor="car">בחר רכב *</Label>
+                <Label htmlFor="car" className="text-right block">בחר רכב *</Label>
                 <Select
                   value={formData.car_id}
                   onValueChange={(value) => setFormData({ ...formData, car_id: value })}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-right">
                     <SelectValue placeholder="בחר רכב" />
                   </SelectTrigger>
                   <SelectContent>
@@ -158,7 +158,7 @@ const SaleForm = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">מחיר מכירה *</Label>
+                  <Label htmlFor="price" className="text-right block">מחיר מכירה *</Label>
                   <div className="relative">
                     <Input
                       id="price"
@@ -168,83 +168,96 @@ const SaleForm = () => {
                       onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
                       placeholder="0.00"
                       required
-                      className="pr-8"
+                      className="text-right pl-8"
+                      dir="rtl"
                     />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                       ₪
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="date">תאריך מכירה *</Label>
+                  <Label htmlFor="date" className="text-right block">תאריך מכירה *</Label>
                   <Input
                     id="date"
                     type="date"
                     value={formData.sale_date}
                     onChange={(e) => setFormData({ ...formData, sale_date: e.target.value })}
                     required
+                    className="text-right"
+                    dir="rtl"
                   />
                 </div>
               </div>
 
               <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-semibold text-lg">פרטי הקונה</h3>
+                <h3 className="font-semibold text-lg text-right">פרטי הקונה</h3>
 
                 <div className="space-y-2">
-                  <Label htmlFor="buyer_name">שם הקונה *</Label>
+                  <Label htmlFor="buyer_name" className="text-right block">שם הקונה *</Label>
                   <Input
                     id="buyer_name"
                     value={formData.buyer_name}
                     onChange={(e) => setFormData({ ...formData, buyer_name: e.target.value })}
                     placeholder="שם מלא"
                     required
+                    className="text-right"
+                    dir="rtl"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="buyer_phone">טלפון</Label>
+                    <Label htmlFor="buyer_phone" className="text-right block">טלפון</Label>
                     <Input
                       id="buyer_phone"
                       type="tel"
                       value={formData.buyer_phone}
                       onChange={(e) => setFormData({ ...formData, buyer_phone: e.target.value })}
                       placeholder="050-1234567"
+                      className="text-right"
+                      dir="rtl"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="buyer_email">אימייל</Label>
+                    <Label htmlFor="buyer_email" className="text-right block">אימייל</Label>
                     <Input
                       id="buyer_email"
                       type="email"
                       value={formData.buyer_email}
                       onChange={(e) => setFormData({ ...formData, buyer_email: e.target.value })}
                       placeholder="buyer@email.com"
+                      className="text-right"
+                      dir="rtl"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="buyer_id">ת.ז / ח.פ</Label>
+                  <Label htmlFor="buyer_id" className="text-right block">ת.ז / ח.פ</Label>
                   <Input
                     id="buyer_id"
                     value={formData.buyer_id_number}
                     onChange={(e) => setFormData({ ...formData, buyer_id_number: e.target.value })}
                     placeholder="מספר תעודת זהות או חברה"
+                    className="text-right"
+                    dir="rtl"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">הערות</Label>
+                <Label htmlFor="notes" className="text-right block">הערות</Label>
                 <Textarea
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="הערות נוספות על המכירה..."
                   rows={4}
+                  className="resize-none text-right"
+                  dir="rtl"
                 />
               </div>
 
