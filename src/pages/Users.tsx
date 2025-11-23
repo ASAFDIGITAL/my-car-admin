@@ -358,34 +358,40 @@ const Users = () => {
               צור חשבון משתמש חדש במערכת. המשתמש יוכל להתחבר באמצעות האימייל והסיסמה שתגדיר.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4" dir="rtl">
             <div className="space-y-2">
-              <Label htmlFor="fullName">שם מלא</Label>
+              <Label htmlFor="fullName" className="text-right block">שם מלא</Label>
               <Input
                 id="fullName"
                 value={newUserData.fullName}
                 onChange={(e) => setNewUserData({ ...newUserData, fullName: e.target.value })}
                 placeholder="הזן שם מלא"
+                className="text-right"
+                dir="rtl"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">אימייל</Label>
+              <Label htmlFor="email" className="text-right block">אימייל</Label>
               <Input
                 id="email"
                 type="email"
                 value={newUserData.email}
                 onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
                 placeholder="example@email.com"
+                className="text-right"
+                dir="rtl"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">סיסמה</Label>
+              <Label htmlFor="password" className="text-right block">סיסמה</Label>
               <Input
                 id="password"
                 type="password"
                 value={newUserData.password}
                 onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
                 placeholder="הזן סיסמה"
+                className="text-right"
+                dir="rtl"
               />
             </div>
           </div>
