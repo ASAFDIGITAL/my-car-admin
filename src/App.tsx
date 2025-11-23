@@ -13,6 +13,7 @@ import CarForm from "./pages/CarForm";
 import Sales from "./pages/Sales";
 import SaleForm from "./pages/SaleForm";
 import Users from "./pages/Users";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,6 +81,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <Users />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <Settings />
                 </ProtectedRoute>
               }
             />
