@@ -141,180 +141,232 @@ const CarForm = () => {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Link to="/cars">
-            <Button variant="ghost" size="icon">
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-2">
-              {isEdit ? 'עריכת רכב' : 'הוספת רכב חדש'}
-            </h1>
-            <p className="text-muted-foreground">
-              {isEdit ? 'ערוך את פרטי הרכב' : 'הוסף רכב חדש למערכת'}
-            </p>
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-6">
+            <Link to="/cars">
+              <Button variant="ghost" size="icon">
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                {isEdit ? 'עריכת רכב' : 'הוספת רכב חדש'}
+              </h1>
+              <p className="text-muted-foreground">
+                {isEdit ? 'ערוך את פרטי הרכב' : 'הוסף רכב חדש למערכת'}
+              </p>
+            </div>
           </div>
+
+          <Tabs defaultValue="details" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="details">פרטי הרכב</TabsTrigger>
+              {isEdit && (
+                <TabsTrigger value="images">
+                  <Image className="w-4 h-4 ml-2" />
+                  תמונות
+                </TabsTrigger>
+              )}
+            </TabsList>
+
+            <TabsContent value="details">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Empty space on left */}
+                <div className="hidden lg:block lg:col-span-2" />
+
+                {/* Main form on the right */}
+                <div className="lg:col-span-10">
+                  <form onSubmit={handleSubmit}>
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="text-2xl">פרטי הרכב</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-8">
+                        {/* Basic Details Section */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 pb-2 border-b border-border">
+                            <div className="w-1 h-6 bg-primary rounded-full" />
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                              פרטים בסיסיים
+                            </h3>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="title">שם הרכב *</Label>
+                              <Input
+                                id="title"
+                                value={formData.title}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                placeholder="לדוגמה: מרצדס בנץ ספרינטר 519 2019"
+                                required
+                                className="text-lg"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="company">יצרן</Label>
+                                <Select
+                                  value={formData.company_id}
+                                  onValueChange={(value) => setFormData({ ...formData, company_id: value })}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="בחר יצרן" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {companies.map((company) => (
+                                      <SelectItem key={company.id} value={company.id}>
+                                        {company.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="type">סוג רכב</Label>
+                                <Select
+                                  value={formData.car_type_id}
+                                  onValueChange={(value) => setFormData({ ...formData, car_type_id: value })}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="בחר סוג" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {carTypes.map((type) => (
+                                      <SelectItem key={type.id} value={type.id}>
+                                        {type.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="year">שנה</Label>
+                                <Select
+                                  value={formData.car_year_id}
+                                  onValueChange={(value) => setFormData({ ...formData, car_year_id: value })}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="בחר שנה" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {carYears.map((year) => (
+                                      <SelectItem key={year.id} value={year.id}>
+                                        {year.year}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="status">סטטוס</Label>
+                              <Select
+                                value={formData.status}
+                                onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="available">זמין</SelectItem>
+                                  <SelectItem value="sold">נמכר</SelectItem>
+                                  <SelectItem value="reserved">שמור</SelectItem>
+                                  <SelectItem value="maintenance">בתחזוקה</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Financial Section */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 pb-2 border-b border-border">
+                            <div className="w-1 h-6 bg-primary rounded-full" />
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                              פרטים כספיים
+                            </h3>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="price">מחיר רכישה (פנימי)</Label>
+                            <Input
+                              id="price"
+                              type="number"
+                              step="0.01"
+                              value={formData.purchase_price}
+                              onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
+                              placeholder="0.00"
+                              className="text-lg"
+                            />
+                            <p className="text-xs text-muted-foreground">מחיר זה לא יופיע באתר הציבורי</p>
+                          </div>
+                        </div>
+
+                        {/* Notes Section */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 pb-2 border-b border-border">
+                            <div className="w-1 h-6 bg-primary rounded-full" />
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                              הערות והארות
+                            </h3>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="notes">הערות פנימיות</Label>
+                            <Textarea
+                              id="notes"
+                              value={formData.internal_notes}
+                              onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
+                              placeholder="הערות, פרטים נוספים..."
+                              rows={4}
+                              className="resize-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-4 border-t border-border">
+                          <Button type="submit" disabled={loading} size="lg" className="gap-2">
+                            <Save className="w-4 h-4" />
+                            {loading ? 'שומר...' : isEdit ? 'עדכן' : 'הוסף'}
+                          </Button>
+                          <Link to="/cars">
+                            <Button type="button" variant="outline" size="lg">
+                              ביטול
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </form>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="images">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="hidden lg:block lg:col-span-2" />
+                <div className="lg:col-span-10">
+                  <Card className="shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="text-2xl">תמונות הרכב</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ImageUpload carId={id!} />
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
-
-        <Tabs defaultValue="details" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">פרטי הרכב</TabsTrigger>
-            <TabsTrigger value="images" disabled={!isEdit}>
-              <Image className="w-4 h-4 ml-2" />
-              תמונות
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details">
-            <form onSubmit={handleSubmit}>
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle>פרטי הרכב</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">שם הרכב *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="לדוגמה: מרצדס בנץ ספרינטר 519 2019"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="company">יצרן</Label>
-                  <Select
-                    value={formData.company_id}
-                    onValueChange={(value) => setFormData({ ...formData, company_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="בחר יצרן" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="type">סוג רכב</Label>
-                  <Select
-                    value={formData.car_type_id}
-                    onValueChange={(value) => setFormData({ ...formData, car_type_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="בחר סוג" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {carTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="year">שנה</Label>
-                  <Select
-                    value={formData.car_year_id}
-                    onValueChange={(value) => setFormData({ ...formData, car_year_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="בחר שנה" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {carYears.map((year) => (
-                        <SelectItem key={year.id} value={year.id}>
-                          {year.year}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">סטטוס</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: any) => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="available">זמין</SelectItem>
-                      <SelectItem value="sold">נמכר</SelectItem>
-                      <SelectItem value="reserved">שמור</SelectItem>
-                      <SelectItem value="maintenance">בתחזוקה</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="price">מחיר רכישה (פנימי)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.purchase_price}
-                  onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
-                  placeholder="0.00"
-                />
-                <p className="text-xs text-muted-foreground">מחיר זה לא יופיע באתר הציבורי</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">הערות פנימיות</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.internal_notes}
-                  onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
-                  placeholder="הערות, פרטים נוספים..."
-                  rows={4}
-                />
-              </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button type="submit" disabled={loading} className="gap-2">
-                      <Save className="w-4 h-4" />
-                      {loading ? 'שומר...' : isEdit ? 'עדכן' : 'הוסף'}
-                    </Button>
-                    <Link to="/cars">
-                      <Button type="button" variant="outline">
-                        ביטול
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="images">
-            {isEdit && (
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle>תמונות הרכב</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ImageUpload carId={id!} />
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
       </div>
     </Layout>
   );
