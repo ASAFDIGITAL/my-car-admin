@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
-import { Car, LayoutDashboard, LogOut, ShoppingCart } from 'lucide-react';
+import { Car, LayoutDashboard, LogOut, ShoppingCart, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -24,6 +24,7 @@ const Layout = ({ children }: LayoutProps) => {
     { to: '/dashboard', label: 'לוח בקרה', icon: LayoutDashboard },
     { to: '/cars', label: 'רכבים', icon: Car },
     { to: '/sales', label: 'מכירות', icon: ShoppingCart },
+    { to: '/users', label: 'משתמשים', icon: Users },
   ];
 
   return (

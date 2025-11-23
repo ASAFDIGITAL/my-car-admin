@@ -12,6 +12,7 @@ import Cars from "./pages/Cars";
 import CarForm from "./pages/CarForm";
 import Sales from "./pages/Sales";
 import SaleForm from "./pages/SaleForm";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <SaleForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <Users />
                 </ProtectedRoute>
               }
             />
