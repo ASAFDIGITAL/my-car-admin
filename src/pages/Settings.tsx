@@ -48,6 +48,11 @@ const Settings = () => {
 
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionResults, setConnectionResults] = useState<any>(null);
+  
+  const [wpUrl, setWpUrl] = useState('');
+  const [wpUsername, setWpUsername] = useState('');
+  const [wpPassword, setWpPassword] = useState('');
+  const [savingCredentials, setSavingCredentials] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -183,6 +188,47 @@ const Settings = () => {
     }
   };
 
+  const handleSaveCredentials = async () => {
+    if (!wpUrl.trim() || !wpUsername.trim() || !wpPassword.trim()) {
+      toast.error('יש למלא את כל השדות');
+      return;
+    }
+
+    try {
+      setSavingCredentials(true);
+      toast.loading('שומר פרטי חיבור...');
+
+      // Save to environment variables via Supabase secrets
+      // Note: This will update the secrets, which requires backend deployment
+      const { error: urlError } = await supabase.functions.invoke('update-wp-credentials', {
+        body: {
+          url: wpUrl,
+          username: wpUsername,
+          password: wpPassword,
+        },
+      });
+
+      if (urlError) {
+        throw urlError;
+      }
+
+      toast.dismiss();
+      toast.success('פרטי החיבור נשמרו בהצלחה');
+      
+      // Clear password field for security
+      setWpPassword('');
+      
+      // Clear previous test results
+      setConnectionResults(null);
+    } catch (error: any) {
+      toast.dismiss();
+      console.error('Error saving credentials:', error);
+      toast.error(`שגיאה בשמירת פרטים: ${error.message}`);
+    } finally {
+      setSavingCredentials(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -208,11 +254,75 @@ const Settings = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <SettingsIcon className="w-5 h-5" />
+                  פרטי חיבור ל-WordPress
+                </CardTitle>
+                <CardDescription>
+                  הזן את פרטי החיבור לאתר WordPress שלך
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4" dir="rtl">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">כתובת אתר WordPress</label>
+                  <Input
+                    type="url"
+                    placeholder="https://walid-group.co.il"
+                    value={wpUrl}
+                    onChange={(e) => setWpUrl(e.target.value)}
+                    disabled={savingCredentials}
+                    className="text-right"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    הכתובת המלאה של האתר (כולל https://)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">שם משתמש</label>
+                  <Input
+                    type="text"
+                    placeholder="שם המשתמש ב-WordPress"
+                    value={wpUsername}
+                    onChange={(e) => setWpUsername(e.target.value)}
+                    disabled={savingCredentials}
+                    className="text-right"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">סיסמת אפליקציה (App Password)</label>
+                  <Input
+                    type="password"
+                    placeholder="xxxx xxxx xxxx xxxx"
+                    value={wpPassword}
+                    onChange={(e) => setWpPassword(e.target.value)}
+                    disabled={savingCredentials}
+                    className="text-right"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    לא הסיסמה הרגילה - סיסמת אפליקציה שנוצרת בהגדרות המשתמש ב-WordPress
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleSaveCredentials}
+                  disabled={savingCredentials}
+                  className="gap-2 w-full"
+                  size="lg"
+                >
+                  {savingCredentials ? 'שומר...' : 'שמור פרטי חיבור'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Wifi className="w-5 h-5" />
                   בדיקת חיבור ל-WordPress
                 </CardTitle>
                 <CardDescription>
-                  בדוק את החיבור להגדרות וההרשאות ל-WordPress
+                  בדוק את החיבור והרשאות ל-WordPress
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
