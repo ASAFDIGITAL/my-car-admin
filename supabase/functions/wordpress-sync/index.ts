@@ -122,7 +122,7 @@ serve(async (req) => {
     // Fetch cars with meta fields (Crocoblock) and featured image
     console.log('Fetching cars...');
     const carsRes = await fetch(
-      `${wpUrl}/wp-json/wp/v2/cars?per_page=100`,
+      `${wpUrl}/wp-json/wp/v2/cars?per_page=100&_fields=id,title,status,company,typecar,yearcar,meta,featured_media,link`,
       {
         headers: { Authorization: authHeader },
       }
