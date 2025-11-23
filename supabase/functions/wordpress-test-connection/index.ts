@@ -37,6 +37,7 @@ serve(async (req) => {
       connection: { success: false, message: '' },
       readPermission: { success: false, message: '' },
       writePermission: { success: false, message: '' },
+      regularPostWrite: { success: false, message: '' },
     };
 
     // Test 1: Basic connection
@@ -115,7 +116,7 @@ serve(async (req) => {
     }
 
     // Test 3: Write permission for 'cars' post type
-    console.log('Testing write permission...');
+    console.log('Testing write permission for cars...');
     try {
       const testPostData = {
         title: '[TEST] Connection Test - Delete Me',
@@ -167,17 +168,80 @@ serve(async (req) => {
         const errorText = await writeRes.text();
         tests.writePermission = { 
           success: false, 
-          message: `שגיאה ביצירת פוסט (${writeRes.status}): ${errorText}` 
+          message: `שגיאה ביצירת פוסט מסוג cars (${writeRes.status}): ${errorText}` 
         };
       }
     } catch (error) {
       tests.writePermission = { 
         success: false, 
-        message: `שגיאה ביצירת פוסט: ${error instanceof Error ? error.message : 'Unknown error'}` 
+        message: `שגיאה ביצירת פוסט מסוג cars: ${error instanceof Error ? error.message : 'Unknown error'}` 
       };
     }
 
-    // Overall success is true only if all tests pass
+    // Test 4: Write permission for regular 'post' type (to compare with cars)
+    console.log('Testing write permission for regular posts...');
+    try {
+      const testPostData = {
+        title: '[TEST] Connection Test - Delete Me',
+        status: 'draft',
+      };
+
+      const writeRes = await fetch(`${wpUrl}/wp-json/wp/v2/posts`, {
+        method: 'POST',
+        headers: {
+          Authorization: authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testPostData),
+      });
+
+      if (writeRes.ok) {
+        const createdPost = await writeRes.json();
+        tests.regularPostWrite = { 
+          success: true, 
+          message: 'הרשאות יצירת פוסטים רגילים תקינות ✓ (הבעיה ספציפית ל-cars/Crocoblock)' 
+        };
+
+        // Clean up: delete the test post
+        try {
+          await fetch(`${wpUrl}/wp-json/wp/v2/posts/${createdPost.id}?force=true`, {
+            method: 'DELETE',
+            headers: { Authorization: authHeader },
+          });
+          console.log('Regular test post cleaned up');
+        } catch (cleanupError) {
+          console.error('Failed to cleanup regular test post:', cleanupError);
+        }
+      } else if (writeRes.status === 401) {
+        const errorData = await writeRes.json();
+        tests.regularPostWrite = { 
+          success: false, 
+          message: `אין הרשאות ליצירת פוסטים רגילים (401): ${errorData.message || 'אין הרשאות'} - בעיה כללית בהרשאות משתמש`,
+          details: errorData
+        };
+      } else if (writeRes.status === 403) {
+        const errorData = await writeRes.json();
+        tests.regularPostWrite = { 
+          success: false, 
+          message: `אין הרשאות ליצירת פוסטים רגילים (403): ${errorData.message || 'אין הרשאות'} - בעיה כללית בהרשאות משתמש`,
+          details: errorData
+        };
+      } else {
+        const errorText = await writeRes.text();
+        tests.regularPostWrite = { 
+          success: false, 
+          message: `שגיאה ביצירת פוסט רגיל (${writeRes.status}): ${errorText}` 
+        };
+      }
+    } catch (error) {
+      tests.regularPostWrite = { 
+        success: false, 
+        message: `שגיאה ביצירת פוסט רגיל: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      };
+    }
+
+    // Overall success is true only if all critical tests pass
+    // Note: regularPostWrite is diagnostic, not required for overall success
     const overallSuccess = 
       tests.credentials.success && 
       tests.connection.success && 
