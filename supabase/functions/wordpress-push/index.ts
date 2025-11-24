@@ -113,6 +113,13 @@ serve(async (req) => {
     console.log('Custom fields:', JSON.stringify(customFields));
     console.log('Number car value:', customFields.number_car);
     
+    // Helper to convert to integer or null
+    const toIntOrNull = (value: any): number | null => {
+      if (!value || value === '') return null;
+      const parsed = parseInt(value, 10);
+      return isNaN(parsed) ? null : parsed;
+    };
+    
     const wpPostData: any = {
       title: car.title,
       // Don't send 'status' field if we don't have a valid term ID
@@ -123,14 +130,15 @@ serve(async (req) => {
       meta: {
         hand: customFields.hand || '',
         km: customFields.km || '',
-        _field_56806: customFields.field_56806 || '',
         horsepower: customFields.horsepower || '',
         engine_type: customFields.engine_type || '',
-        testcar: customFields.testcar || '',
+        testcar: toIntOrNull(customFields.testcar), // Must be integer or null
         price: customFields.price || '',
         seats: customFields.seats || '',
         road_trip_date: customFields.road_trip_date || '',
         number_car: customFields.number_car || '',
+        memon: customFields.memon || '',
+        // Note: Removed _field_56806 as it's a protected Crocoblock field that causes 403 errors
       },
     };
     
